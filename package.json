@@ -1,0 +1,22 @@
+{
+    "name": "yukako",
+    "version": "1.0.0",
+    "description": "A TypeScript Node.js project",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "dev": "ts-node src/index.ts",
+        "watch": "tsc -w",
+        "generate": "./generate_workerd.sh"
+    },
+    "dependencies": {
+        "capnp-es": "^0.0.9",
+        "dotenv": "^16.4.5"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.24",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.3.3"
+    }
+}
