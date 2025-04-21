@@ -4,6 +4,7 @@ import path from 'node:path';
 import { spawn, ChildProcess } from 'node:child_process';
 import { build_config, Config, serialize_config } from '../config';
 import { once } from 'node:events';
+import { Readable } from 'node:stream';
 
 export const getWorkerdBinary = (): string => {
     const platform = process.platform === 'win32' ? 'windows' : process.platform;
@@ -32,7 +33,19 @@ export const getWorkerdBinary = (): string => {
 
 const wait_for_exit = (child: ChildProcess): Promise<void> => {
     return new Promise(resolve => {
-        process.once("exit", () => resolve());
+        process.once("exit", () => {
+            console.log("Process exited");
+            resolve();
+        });
+    })
+}
+
+const handle_output = (stdout: Readable, stderr: Readable) => {
+    stdout.on("data", (data) => {
+        console.log(data.toString());
+    })
+    stderr.on("data", (data) => {
+        console.error(data.toString());
     })
 }
 
@@ -47,20 +60,25 @@ export class WorkerdInstance {
     }
 
     public async update_config(config: Config): Promise<void> {
-        const workerd_config = build_config(config);
+        const workerd_config = await build_config(config);
         const config_binary = serialize_config(workerd_config);
 
         await this.dispose();
 
-        this.child = spawn(this.binary_path, ['serve', '--binary', '-'], {
+        const child_process = spawn(this.binary_path, ['serve', '--binary', '-'], {
             stdio: ['pipe', 'pipe', 'pipe', 'pipe'],
             env: { ...process.env }
         });
 
-        this.exit_promise = wait_for_exit(this.child);
-        this.child?.stdin?.write(config_binary);
-        this.child?.stdin?.end();
-        await once(this.child, "exit");
+        handle_output(child_process.stdout, child_process.stderr);
+        this.child = child_process;
+        this.exit_promise = wait_for_exit(child_process);
+
+        if (child_process.stdin) {
+            child_process.stdin.write(config_binary);
+            child_process.stdin.end();
+            await once(child_process.stdin, "finish");
+        }
     }
 
     public async dispose(): Promise<void> {
