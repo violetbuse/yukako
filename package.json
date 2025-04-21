@@ -14,11 +14,13 @@
         "app-root-path": "^3.1.0",
         "capnp-es": "^0.0.9",
         "dotenv": "^16.4.5",
-        "express": "^5.1.0"
+        "express": "^5.1.0",
+        "wait-on": "^8.0.3"
     },
     "devDependencies": {
         "@types/express": "^5.0.1",
         "@types/node": "^20.11.24",
+        "@types/wait-on": "^5.3.4",
         "esbuild": "^0.25.2",
         "typescript": "^5.3.3"
     }

@@ -9,8 +9,13 @@ type Environment = {
 
 export default {
     async fetch(request: Request, env: Environment) {
-        const host = request.headers.get("host");
-        const hostname = host?.split(":")[0];
+        const url = new URL(request.url);
+
+        if (url.pathname === "/__yukako/startup-check") {
+            return new Response("OK");
+        }
+
+        const hostname = url.hostname;
 
         if (!hostname) {
             return new Response("No hostname", { status: 400 });
