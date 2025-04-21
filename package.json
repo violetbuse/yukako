@@ -18,11 +18,13 @@
         "express": "^5.1.0",
         "mysql2": "^3.14.0",
         "nanoid": "^5.1.5",
+        "object-hash": "^3.0.0",
         "wait-on": "^8.0.3"
     },
     "devDependencies": {
         "@types/express": "^5.0.1",
         "@types/node": "^20.11.24",
+        "@types/object-hash": "^3.0.6",
         "@types/wait-on": "^5.3.4",
         "drizzle-kit": "^0.31.0",
         "esbuild": "^0.25.2",
