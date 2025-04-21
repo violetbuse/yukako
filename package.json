@@ -6,17 +6,21 @@
     "scripts": {
         "build": "tsc",
         "start": "node dist/index.js",
-        "dev": "ts-node src/index.ts",
+        "dev": "tsx src/index.ts",
         "watch": "tsc -w",
         "generate": "./generate_workerd.sh"
     },
     "dependencies": {
+        "app-root-path": "^3.1.0",
         "capnp-es": "^0.0.9",
-        "dotenv": "^16.4.5"
+        "dotenv": "^16.4.5",
+        "express": "^5.1.0"
     },
     "devDependencies": {
+        "@types/express": "^5.0.1",
         "@types/node": "^20.11.24",
         "ts-node": "^10.9.2",
+        "tsx": "^4.19.3",
         "typescript": "^5.3.3"
     }
 }
