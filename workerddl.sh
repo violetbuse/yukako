@@ -38,6 +38,9 @@ curl -L https://github.com/cloudflare/workerd/raw/main/src/workerd/server/worker
 # in workerd.capnp, replace the absolute import "/capnp/c++.capnp" with the relative import "capnp/c++.capnp"
 sed -i 's|import "/capnp/c++.capnp"|import "capnp/c++.capnp"|' $WORKERD_DIR/workerd.capnp
 
+# download the workerd types
+curl -L https://raw.githubusercontent.com/cloudflare/workers-sdk/refs/heads/main/packages/miniflare/src/runtime/config/workerd.ts -o $WORKERD_DIR/types.ts
+
 # get latest release version
 LATEST_RELEASE=$(curl -s https://api.github.com/repos/cloudflare/workerd/releases/latest | jq -r '.tag_name')
 
