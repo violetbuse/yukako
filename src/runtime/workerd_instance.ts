@@ -39,17 +39,16 @@ const wait_for_exit = (child: ChildProcess): Promise<void> => {
     });
 }
 
-const wait_for_startup = async (port: number, timeout: number = 10000): Promise<void> => {
+const wait_for_startup = async (port: number, timeout: number = 1000): Promise<void> => {
     // wait for the server to start, polling every 100ms
     const start_time = Date.now();
     while (Date.now() - start_time < timeout) {
         try {
-            const response = await fetch(`http://localhost:${port}/__yukako/startup-check`);
+            const response = await fetch(`http://localhost:${port}/__yukako/router-startup-check`);
             if (response.ok) {
                 return;
             }
         } catch (error) {
-            console.error(error);
             await new Promise(resolve => setTimeout(resolve, 100));
         }
     }

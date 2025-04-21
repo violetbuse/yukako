@@ -11,7 +11,7 @@ export default {
     async fetch(request: Request, env: Environment) {
         const url = new URL(request.url);
 
-        if (url.pathname === "/__yukako/startup-check") {
+        if (url.pathname === "/__yukako/router-startup-check") {
             return new Response("OK");
         }
 

@@ -13,15 +13,20 @@
     "dependencies": {
         "app-root-path": "^3.1.0",
         "capnp-es": "^0.0.9",
-        "dotenv": "^16.4.5",
+        "dotenv": "^16.5.0",
+        "drizzle-orm": "^0.42.0",
         "express": "^5.1.0",
+        "mysql2": "^3.14.0",
+        "nanoid": "^5.1.5",
         "wait-on": "^8.0.3"
     },
     "devDependencies": {
         "@types/express": "^5.0.1",
         "@types/node": "^20.11.24",
         "@types/wait-on": "^5.3.4",
+        "drizzle-kit": "^0.31.0",
         "esbuild": "^0.25.2",
+        "tsx": "^4.19.3",
         "typescript": "^5.3.3"
     }
 }
