@@ -6,9 +6,7 @@ import { resolve } from 'path';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-const current_file = import.meta.url;
-const path = fileURLToPath(current_file);
-const directory = dirname(path);
+const directory = __dirname;
 
 const client_files = resolve(directory, "client")
 
@@ -61,7 +59,7 @@ export class RuntimeBackend {
 
     public async start(): Promise<void> {
         this.server = app.listen(this.config.backend_port, () => {
-            console.log(`Server is running on port ${this.config.backend_port}`);
+            console.log(`Yukako is running at http://localhost:${this.config.backend_port}`);
         })
     }
 

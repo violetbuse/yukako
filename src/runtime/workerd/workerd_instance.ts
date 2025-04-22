@@ -1,9 +1,11 @@
 import appRootPath from 'app-root-path';
 import path from 'node:path';
 import { spawn, ChildProcess } from 'node:child_process';
-import { build_config, Config, serialize_config } from '../config';
+import { build_config, Config, serialize_config } from '../../config';
 import { once } from 'node:events';
 import { Readable } from 'node:stream';
+import fs from 'node:fs';
+import { pipeline } from 'node:stream/promises';
 
 export const getWorkerdBinary = (): string => {
     const platform = process.platform === 'win32' ? 'windows' : process.platform;
@@ -24,9 +26,8 @@ export const getWorkerdBinary = (): string => {
         throw new Error('Unsupported architecture: arm64 on Windows');
     }
 
-    const app_root = appRootPath.path;
+    const binary = path.join(__dirname, 'workerd', `workerd-${platform}-${arch}`);
 
-    const binary = path.join(app_root, 'workerd', `workerd-${platform}-${arch}`);
     return binary;
 }
 
@@ -67,12 +68,29 @@ const handle_output = (stdout: Readable, stderr: Readable) => {
 
 export class WorkerdInstance {
     private binary_path: string;
+    private binary_ready?: Promise<void>;
+    private should_cleanup_binary: boolean = false;
     private child: ChildProcess | null;
     private exit_promise?: Promise<void>;
     private cleanupInProgress: boolean = false;
 
     constructor() {
         this.binary_path = getWorkerdBinary();
+
+        // if we're running in a package, we need to copy the binary to a temporary file
+        // and make it executable
+        // this is because pkg doesn't support executing the binary directly
+        // @ts-ignore
+        if (process.pkg) {
+            const file = fs.createWriteStream('.workerdbin');
+            this.should_cleanup_binary = true;
+            this.binary_ready = pipeline(fs.createReadStream(this.binary_path), file).then(() => {
+                fs.chmodSync('.workerdbin', 0o755);
+            });
+
+            this.binary_path = './.workerdbin';
+        }
+
         this.child = null;
 
         // Add cleanup handlers for process termination
@@ -87,6 +105,9 @@ export class WorkerdInstance {
         console.log(`Received ${signal}, cleaning up...`);
         try {
             await this.cleanup();
+            if (this.should_cleanup_binary) {
+                fs.rmSync(this.binary_path);
+            }
             process.exit(0);
         } catch (error) {
             console.error('Error during cleanup:', error);
@@ -102,6 +123,10 @@ export class WorkerdInstance {
     }
 
     public async update_config(config: Config): Promise<void> {
+        if (this.binary_ready) {
+            await this.binary_ready;
+        }
+
         const workerd_config = await build_config(config);
         const config_binary = serialize_config(workerd_config);
 

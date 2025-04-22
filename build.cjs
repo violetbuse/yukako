@@ -1,6 +1,7 @@
 const esbuild = require('esbuild');
 const fs = require('fs');
 const path = require('path');
+const cpr = require('cpr');
 
 const logging_options = {
   logLevel: 'info',
@@ -11,13 +12,12 @@ const logging_options = {
 const mainConfig = {
   entryPoints: ['src/index.ts'],
   bundle: true,
-  outfile: 'dist/index.js',
+  outfile: 'dist/index.cjs',
   platform: 'node',
   target: 'node18',
-  format: 'esm',
-  packages: 'external',
+  format: 'cjs',
   banner: {
-    js: 'import * as build_banner_url from "url";\nimport * as build_banner_path from "path";\nconst __filename = build_banner_url.fileURLToPath(import.meta.url);\nconst __dirname = build_banner_path.dirname(__filename);'
+    // js: 'import * as build_banner_url from "url";\nimport * as build_banner_path from "path";\nconst __filename = build_banner_url.fileURLToPath(import.meta.url);\nconst __dirname = build_banner_path.dirname(__filename);'
   },
   ...logging_options
 };
@@ -73,14 +73,14 @@ async function build(watch) {
 
     const contexts = [mainBuildContext, ...workerBuildContexts];
 
-    // Create package.json in dist to specify module type
-    const distPackageJson = {
-      type: "module"
-    };
-    fs.writeFileSync(
-      path.join('dist', 'package.json'),
-      JSON.stringify(distPackageJson, null, 2)
-    );
+    // // Create package.json in dist to specify module type
+    // const distPackageJson = {
+    //   type: "module"
+    // };
+    // fs.writeFileSync(
+    //   path.join('dist', 'package.json'),
+    //   JSON.stringify(distPackageJson, null, 2)
+    // );
 
     if (!watch) {
       await Promise.all(contexts.map(context => context.rebuild()));
@@ -96,6 +96,13 @@ async function build(watch) {
     process.exit(1);
   }
 }
+
+// copy the workerd files to dist/workerd
+cpr('workerd', 'dist/workerd', {
+  deleteFirst: true,
+  overwrite: true,
+  confirm: true,
+});
 
 // Parse command line arguments
 const watch = process.argv.includes('--watch');

@@ -8,9 +8,7 @@ type WorkerScripts = {
 }
 
 export const builtin_worker_scripts = async () => {
-    const current_file = import.meta.url;
-    const path = fileURLToPath(current_file);
-    const directory = dirname(path);
+    const directory = __dirname;
 
     const router_path = resolve(directory, "workers/router.js");
     const router_content = await readFile(router_path, "utf-8");

@@ -1,6 +1,6 @@
-import { db } from "../db";
+import { db } from "../../db";
 import hash from "object-hash";
-import { WorkerConfig } from "../config";
+import { WorkerConfig } from "../../config";
 
 
 
@@ -9,11 +9,13 @@ export class Manager {
     private workers_hash: string;
     private listeners: ((config: WorkerConfig[]) => void)[];
     private poll_interval: number;
+    private running: boolean;
 
     private constructor() {
         this.workers_hash = "";
         this.listeners = [];
         this.poll_interval = 10_000;
+        this.running = true;
     }
 
     public static getInstance(): Manager {
@@ -62,10 +64,14 @@ export class Manager {
     public async start(poll_interval: number) {
         this.poll_interval = poll_interval;
 
-        while (true) {
+        while (this.running) {
             await this.poll_db_for_workers();
             await new Promise(resolve => setTimeout(resolve, this.poll_interval));
         }
+    }
+
+    public async stop() {
+        this.running = false;
     }
 
     public async set_poll_interval(poll_interval: number) {
