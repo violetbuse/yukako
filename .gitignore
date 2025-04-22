@@ -28,4 +28,4 @@ yarn-error.log*
 Thumbs.db 
 
 # Generated files
-src/generated/
+# src/generated/
