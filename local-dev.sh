@@ -1,0 +1,2 @@
+docker run --name yukako-redis -p 6379:6379 -d -e REDIS_PASSWORD=redis -e REDIS_USER=redis redis;
+docker run --name yukako-mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=mypassword -e MYSQL_DATABASE=yukako -e MYSQL_USER=myuser -e MYSQL_PASSWORD=mypassword -d mysql;
