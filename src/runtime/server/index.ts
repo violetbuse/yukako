@@ -1,7 +1,26 @@
 import express from 'express';
 import { Config } from "../../config";
 import http from 'http';
+import { trpcExpressMiddleware } from '../../api/server';
+
 const app = express();
+
+// app.use('/__yukako*', (req, res, next) => {
+//     const local_auth_secret = process.env.LOCAL_AUTH_TOKEN;
+//     if (!local_auth_secret) {
+//         res.status(500).json({ error: 'LOCAL_AUTH_TOKEN is not set' });
+//         return;
+//     }
+
+//     const local_auth_token = req.headers['authorization'];
+//     if (local_auth_token !== local_auth_secret) {
+//         res.status(401).json({ error: 'Unauthorized' });
+//         return;
+//     }
+//     next();
+// });
+
+app.use('/api/trpc', trpcExpressMiddleware);
 
 export class RuntimeBackend {
     private config: Config;

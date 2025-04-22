@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "A TypeScript Node.js project with React",
     "main": "dist/index.js",
+    "type": "module",
     "scripts": {
         "build:server": "node build.js",
         "build:client": "vite build",
@@ -19,6 +20,11 @@
         "generate": "./generate_workerd.sh"
     },
     "dependencies": {
+        "@tailwindcss/vite": "^4.1.4",
+        "@tanstack/react-query": "^5.74.4",
+        "@trpc/client": "^11.1.0",
+        "@trpc/server": "^11.1.0",
+        "@trpc/tanstack-react-query": "^11.1.0",
         "app-root-path": "^3.1.0",
         "capnp-es": "^0.0.9",
         "dotenv": "^16.5.0",
@@ -29,7 +35,9 @@
         "object-hash": "^3.0.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "wait-on": "^8.0.3"
+        "tailwindcss": "^4.1.4",
+        "wait-on": "^8.0.3",
+        "zod": "^3.24.3"
     },
     "devDependencies": {
         "@types/express": "^5.0.1",
@@ -39,6 +47,7 @@
         "@types/react-dom": "^18.2.19",
         "@types/wait-on": "^5.3.4",
         "@vitejs/plugin-react": "^4.2.1",
+        "concurrently": "^9.1.2",
         "drizzle-kit": "^0.31.0",
         "esbuild": "^0.25.2",
         "nodemon": "^3.1.9",

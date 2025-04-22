@@ -1,13 +1,53 @@
-import React from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createTRPCClient, httpBatchLink } from '@trpc/client';
+import { AppRouter } from '../api/server';
+import React, { useState } from 'react'
+import { TRPCProvider } from './trpc_client';
+
+function makeQueryClient() {
+    return new QueryClient({
+        defaultOptions: {
+            queries: {
+                staleTime: 60 * 1000,
+            }
+        }
+    })
+}
+
+let browserQueryClient: QueryClient | null = null;
+
+function getQueryClient() {
+    if (!browserQueryClient) {
+        browserQueryClient = makeQueryClient();
+    }
+    return browserQueryClient;
+}
+
+const trpcURL = `${window.location.origin}/api/trpc`;
 
 function App() {
+    const queryClient = getQueryClient();
+    const [trpcClient] = useState(() => createTRPCClient<AppRouter>({
+        links: [
+            httpBatchLink({
+                url: trpcURL,
+            })
+        ]
+    }));
+
+    console.log(trpcURL);
+
     return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-            <div className="bg-white p-8 rounded-lg shadow-md">
-                <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to Yukako</h1>
-                <p className="text-gray-600">Your React application is ready!</p>
-            </div>
-        </div>
+        <QueryClientProvider client={queryClient}>
+            <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+                <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+                    <div className="bg-white p-8 rounded-lg shadow-md">
+                        <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to Yukako</h1>
+                        <p className="text-gray-600">Your React application is ready!</p>
+                    </div>
+                </div>
+            </TRPCProvider>
+        </QueryClientProvider>
     )
 }
 
