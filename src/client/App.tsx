@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
-import { AppRouter } from '../api/server';
+import { AppRouter } from '@/api/server';
 import React, { useState } from 'react'
-import { TRPCProvider } from './trpc_client';
+import { TRPCProvider } from '@/client/trpc_client';
 
 function makeQueryClient() {
     return new QueryClient({

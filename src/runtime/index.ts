@@ -1,6 +1,6 @@
-import { Manager } from "./manager";
-import { RuntimeBackend } from "./server";
-import { WorkerdInstance } from "./workerd/workerd_instance";
+import { Manager } from "@/runtime/manager";
+import { RuntimeBackend } from "@/runtime/server";
+import { WorkerdInstance } from "@/runtime/workerd/workerd_instance";
 
 export class Runtime {
     private workerd_instance: WorkerdInstance;

@@ -1,6 +1,6 @@
 import { Data, List, Message, Struct } from "capnp-es"
-import { Config as CapnpConfig, Service } from "../generated/workerd_capnp"
-import { Config, kVoid } from "../generated/workerd_types";
+import { Config as CapnpConfig, Service } from "@/generated/workerd_capnp"
+import { Config, kVoid } from "@/generated/workerd_types";
 
 function capitalize<S extends string>(str: S): Capitalize<S> {
     return (

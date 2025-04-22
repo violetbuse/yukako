@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { Runtime } from '../runtime';
+import { Runtime } from '@/runtime';
 
 const serveCommand = new Command('serve')
     .description('Start the server and manage worker processes')

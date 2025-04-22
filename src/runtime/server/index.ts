@@ -1,10 +1,8 @@
 import express from 'express';
-import { Config } from "../../config";
+import { Config } from "@/config";
 import http from 'http';
-import { trpcExpressMiddleware } from '../../api/server';
+import { trpcExpressMiddleware } from '@/api/server';
 import { resolve } from 'path';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
 
 const directory = __dirname;
 

@@ -1,7 +1,6 @@
-import appRootPath from 'app-root-path';
 import path from 'node:path';
 import { spawn, ChildProcess } from 'node:child_process';
-import { build_config, Config, serialize_config } from '../../config';
+import { build_config, Config, serialize_config } from '@/config';
 import { once } from 'node:events';
 import { Readable } from 'node:stream';
 import fs from 'node:fs';

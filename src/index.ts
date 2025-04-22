@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import serveCommand from './commands/serve';
+import serveCommand from '@/commands/serve';
 
 import { Command } from 'commander';
 
