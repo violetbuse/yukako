@@ -2,8 +2,27 @@ import express from 'express';
 import { Config } from "../../config";
 import http from 'http';
 import { trpcExpressMiddleware } from '../../api/server';
+import { resolve } from 'path';
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const current_file = import.meta.url;
+const path = fileURLToPath(current_file);
+const directory = dirname(path);
+
+const client_files = resolve(directory, "client")
+
+console.log(client_files);
 
 const app = express();
+
+app.use(express.static(client_files, {
+    dotfiles: 'ignore',
+    index: "index.html",
+    redirect: true,
+    extensions: ['html', 'htm'],
+    fallthrough: true,
+}));
 
 // app.use('/__yukako*', (req, res, next) => {
 //     const local_auth_secret = process.env.LOCAL_AUTH_TOKEN;
@@ -21,6 +40,15 @@ const app = express();
 // });
 
 app.use('/api/trpc', trpcExpressMiddleware);
+
+app.use((req, res, next) => {
+    res.sendFile(resolve(client_files, 'index.html'), (err) => {
+        if (err) {
+            next(err);
+        }
+    });
+});
+
 
 export class RuntimeBackend {
     private config: Config;
