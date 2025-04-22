@@ -13,7 +13,7 @@ export class Manager {
     private constructor() {
         this.workers_hash = "";
         this.listeners = [];
-        this.poll_interval = 1000;
+        this.poll_interval = 10_000;
     }
 
     public static getInstance(): Manager {
@@ -45,7 +45,7 @@ export class Manager {
             }));
 
             // pretty print the new config
-            console.log(JSON.stringify(config, null, 2));
+            // console.log(JSON.stringify(config, null, 2));
 
             this.listeners.forEach(listener => listener(config));
         }

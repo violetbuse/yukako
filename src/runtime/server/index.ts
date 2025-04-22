@@ -1,24 +1,32 @@
 import express from 'express';
 import { Config } from "../../config";
+import http from 'http';
 const app = express();
-
-app.get('/', async (_req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Hello, World!');
-})
 
 export class RuntimeBackend {
     private config: Config;
-    private app: express.Application;
+    private server: http.Server | null;
 
     constructor(config: Config) {
         this.config = config;
-        this.app = express();
+        this.server = null;
     }
 
     public async start(): Promise<void> {
-        this.app.listen(this.config.backend_port, () => {
+        this.server = app.listen(this.config.backend_port, () => {
             console.log(`Server is running on port ${this.config.backend_port}`);
         })
+    }
+
+    public async stop(): Promise<void> {
+        if (this.server) {
+            this.server.close();
+        }
+    }
+
+    public async update_config(config: Config): Promise<void> {
+        this.config = config;
+        this.stop();
+        this.start();
     }
 }

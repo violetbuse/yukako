@@ -1,13 +1,21 @@
 {
     "name": "yukako",
     "version": "1.0.0",
-    "description": "A TypeScript Node.js project",
+    "description": "A TypeScript Node.js project with React",
     "main": "dist/index.js",
     "scripts": {
-        "build": "node build.js",
-        "start": "node dist/index.js",
-        "watch": "tsc -w",
-        "dev": "npm run build && npm run start",
+        "build:server": "node build.js",
+        "build:client": "vite build",
+        "build": "npm run build:server && npm run build:client",
+        "watch:server": "node build.js --watch",
+        "watch:client": "vite build --watch",
+        "watch": "npm run watch:server & npm run watch:client",
+        "dev:server": "concurrently --raw \"npm run watch:server\" \"nodemon dist/index.js\"",
+        "dev:client": "vite --port 5173",
+        "dev": "concurrently --names \"server,client\" --prefix-colors \"blue,green\" \"npm run dev:server\" \"npm run dev:client\"",
+        "start:server": "node dist/index.js",
+        "start:client": "vite preview",
+        "start": "npm run start:server & npm run start:client",
         "generate": "./generate_workerd.sh"
     },
     "dependencies": {
@@ -19,16 +27,23 @@
         "mysql2": "^3.14.0",
         "nanoid": "^5.1.5",
         "object-hash": "^3.0.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "wait-on": "^8.0.3"
     },
     "devDependencies": {
         "@types/express": "^5.0.1",
         "@types/node": "^20.11.24",
         "@types/object-hash": "^3.0.6",
+        "@types/react": "^18.2.55",
+        "@types/react-dom": "^18.2.19",
         "@types/wait-on": "^5.3.4",
+        "@vitejs/plugin-react": "^4.2.1",
         "drizzle-kit": "^0.31.0",
         "esbuild": "^0.25.2",
+        "nodemon": "^3.1.9",
         "tsx": "^4.19.3",
-        "typescript": "^5.3.3"
+        "typescript": "^5.3.3",
+        "vite": "^5.1.4"
     }
 }

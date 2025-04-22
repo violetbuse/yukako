@@ -123,7 +123,8 @@ export class WorkerdInstance {
         }
 
         await wait_for_startup(config.workerd_port);
-        console.log("Workerd started");
+        // console.log("started workerd instance with config", JSON.stringify(workerd_config, null, 2));
+        console.log("started workerd instance");
     }
 
     public async dispose(): Promise<void> {

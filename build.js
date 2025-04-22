@@ -2,6 +2,11 @@ const esbuild = require('esbuild');
 const fs = require('fs');
 const path = require('path');
 
+const logging_options = {
+  logLevel: 'info',
+  color: true
+}
+
 // Configuration for the main project build
 const mainConfig = {
   entryPoints: ['src/index.ts'],
@@ -13,7 +18,8 @@ const mainConfig = {
   packages: 'external',
   banner: {
     js: 'import * as build_banner_url from "url";\nimport * as build_banner_path from "path";\nconst __filename = build_banner_url.fileURLToPath(import.meta.url);\nconst __dirname = build_banner_path.dirname(__filename);'
-  }
+  },
+  ...logging_options
 };
 
 // Configuration for worker builds
@@ -26,6 +32,7 @@ const workerConfig = {
     // All the external dependencies that are not needed for the worker
     'script'
   ],
+  ...logging_options
 };
 
 // Function to build individual workers
@@ -33,20 +40,22 @@ async function buildWorkers() {
   const workersDir = path.join(__dirname, 'src', 'workers');
   const files = fs.readdirSync(workersDir);
   
-  for (const file of files) {
-    if (file.endsWith('.ts') && file !== 'index.ts') {
+  const workerBuildContexts = files
+    .filter(file => file.endsWith('.ts') && file !== 'index.ts')
+    .map(file => {
       const workerName = path.basename(file, '.ts');
-      await esbuild.build({
+      return esbuild.context({
         ...workerConfig,
         entryPoints: [path.join(workersDir, file)],
         outfile: path.join('dist', 'workers', `${workerName}.js`),
       });
-    }
-  }
+    });
+
+  return await Promise.all(workerBuildContexts);
 }
 
 // Main build function
-async function build() {
+async function build(watch) {
   try {
     // Create dist directories if they don't exist
     if (!fs.existsSync('dist')) {
@@ -56,13 +65,13 @@ async function build() {
       fs.mkdirSync('dist/workers');
     }
 
-    // Build main project
-    console.log('Building main project...');
-    await esbuild.build(mainConfig);
+    const mainBuildContext = await esbuild.context({
+      ...mainConfig,
+    });
 
-    // Build workers
-    console.log('Building workers...');
-    await buildWorkers();
+    const workerBuildContexts = await buildWorkers(watch);
+
+    const contexts = [mainBuildContext, ...workerBuildContexts];
 
     // Create package.json in dist to specify module type
     const distPackageJson = {
@@ -73,11 +82,21 @@ async function build() {
       JSON.stringify(distPackageJson, null, 2)
     );
 
-    console.log('Build completed successfully!');
+    if (!watch) {
+      await Promise.all(contexts.map(context => context.rebuild()));
+      await Promise.all(contexts.map(context => context.dispose()));
+      console.log('Build completed successfully!');
+    } else {
+      console.log('Watching for changes...');
+      await Promise.all(contexts.map(context => context.watch()));
+      process.on('SIGINT', () => process.exit(0));
+    }
   } catch (error) {
     console.error('Build failed:', error);
     process.exit(1);
   }
 }
 
-build();
+// Parse command line arguments
+const watch = process.argv.includes('--watch');
+build(watch);
