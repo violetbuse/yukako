@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
-import { AppRouter } from '@/api/server';
+import { AppRouter } from '@/api/routers';
 import React, { useState } from 'react'
 import { TRPCProvider } from '@/client/trpc_client';
+import { Navbar } from '@/client/components/navbar';
 
 function makeQueryClient() {
     return new QueryClient({
@@ -40,7 +41,9 @@ function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+                <Navbar />
                 <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+
                     <div className="bg-white p-8 rounded-lg shadow-md">
                         <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to Yukako</h1>
                         <p className="text-gray-600">Your React application is ready!</p>

@@ -7,21 +7,28 @@ import { and, eq, isNull } from "drizzle-orm";
 
 export const t = initTRPC.context<Context>().create();
 
-export const appRouter = t.router({});
+export const router = t.router;
+export const public_procedure = t.procedure;
 
-const createContext = async ({ req, res }: trpcExpress.CreateExpressContextOptions): Promise<Context> => {
+
+export const createTRPCServerContext = async ({ req, res }: trpcExpress.CreateExpressContextOptions): Promise<Context> => {
     const user = await trpc_context_auth(req, res);
 
     const user_id = user?.id ?? null;
-    const active_organizations = await db.query.organization_memberships.findMany({
-        where: and(
-            eq(organization_memberships.user_id, user_id ?? ''),
-            eq(organization_memberships.status, 'active'),
-            isNull(organization_memberships.deleted_at)
-        )
-    })
 
-    const organization_ids = active_organizations.map((organization) => organization.organization_id);
+    let organization_ids: string[] = [];
+
+    if (user_id) {
+        const active_organizations = await db.query.organization_memberships.findMany({
+            where: and(
+                eq(organization_memberships.user_id, user_id ?? ''),
+                eq(organization_memberships.status, 'active'),
+                isNull(organization_memberships.deleted_at)
+            )
+        })
+
+        organization_ids = active_organizations.map((organization) => organization.organization_id);
+    }
 
     return {
         user: user_id,
@@ -29,14 +36,28 @@ const createContext = async ({ req, res }: trpcExpress.CreateExpressContextOptio
     }
 }
 
+// export const authed_procedure = t.procedure.use(async ({ ctx, next }) => {
+//     if (!ctx.user) {
+//         throw new TRPCError({ code: 'UNAUTHORIZED' });
+//     }
+
+//     const new_ctx = {
+//         user_id: ctx.user as string,
+//         organization_ids: ctx.organization_ids
+//     }
+
+//     return next({ ctx: new_ctx });
+// })
+
+// export const organization_procedure = t.procedure.input(z.string()).use(async ({ ctx, input, next }) => {
+//     if (!ctx.organization_ids.includes(input)) {
+//         throw new TRPCError({ code: 'FORBIDDEN' });
+//     }
+
+//     return next({ ctx });
+// })
+
 type Context = {
     user: string | null;
     organization_ids: string[];
 }
-
-export type AppRouter = typeof appRouter;
-
-export const trpcExpressMiddleware = trpcExpress.createExpressMiddleware({
-    router: appRouter,
-    createContext
-});

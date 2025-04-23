@@ -14,7 +14,7 @@
         "watch:server": "node build.cjs --watch",
         "watch:client": "vite build --watch",
         "watch": "npm run watch:server & npm run watch:client",
-        "dev:server": "concurrently --raw \"npm run watch:server\" \"nodemon dist/index.cjs serve\"",
+        "dev:server": "concurrently --raw \"npm run watch:server\" \"nodemon --enable-source-maps dist/index.cjs serve\"",
         "dev:client": "vite --port 5173",
         "dev:webhook": "lt --port 3000 --subdomain viowet-yukako",
         "dev": "concurrently --names \"server,client,webhook\" --prefix-colors \"blue,green,red\" \"npm run dev:server\" \"npm run dev:client\" \"npm run dev:webhook\"",
@@ -33,6 +33,7 @@
         "app-root-path": "^3.1.0",
         "capnp-es": "^0.0.9",
         "commander": "^13.1.0",
+        "cookie-parser": "^1.4.7",
         "dotenv": "^16.5.0",
         "drizzle-orm": "^0.42.0",
         "express": "^5.1.0",
@@ -48,6 +49,7 @@
         "zod": "^3.24.3"
     },
     "devDependencies": {
+        "@types/cookie-parser": "^1.4.8",
         "@types/express": "^5.0.1",
         "@types/morgan": "^1.9.9",
         "@types/node": "^20.11.24",

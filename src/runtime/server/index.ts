@@ -1,11 +1,14 @@
 import express from 'express';
 import { Config } from "@/config";
 import http from 'http';
-import { trpcExpressMiddleware } from '@/api/server';
+import * as trpcExpress from '@trpc/server/adapters/express';
 import { resolve } from 'path';
 import { auth_router } from '@/runtime/server/auth';
 import morgan from 'morgan';
 import { Request, Response, NextFunction } from 'express';
+import { appRouter } from '@/api/routers';
+import { createTRPCServerContext } from '@/api/server';
+import cookieParser from 'cookie-parser';
 
 const directory = __dirname;
 
@@ -18,7 +21,7 @@ const app = express();
 app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 
 app.use(express.json());
-
+app.use(cookieParser());
 app.use(morgan('tiny'));
 
 app.use(express.static(client_files, {
@@ -44,7 +47,10 @@ app.use(express.static(client_files, {
 //     next();
 // });
 
-app.use('/api/trpc', trpcExpressMiddleware);
+app.use('/api/trpc', trpcExpress.createExpressMiddleware({
+    router: appRouter,
+    createContext: createTRPCServerContext
+}));
 
 app.use('/api/auth', auth_router);
 
