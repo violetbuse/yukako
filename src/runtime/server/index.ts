@@ -3,6 +3,9 @@ import { Config } from "@/config";
 import http from 'http';
 import { trpcExpressMiddleware } from '@/api/server';
 import { resolve } from 'path';
+import { auth_router } from '@/runtime/server/auth';
+import morgan from 'morgan';
+import { Request, Response, NextFunction } from 'express';
 
 const directory = __dirname;
 
@@ -11,6 +14,12 @@ const client_files = resolve(directory, "client")
 console.log(client_files);
 
 const app = express();
+
+app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+
+app.use(express.json());
+
+app.use(morgan('tiny'));
 
 app.use(express.static(client_files, {
     dotfiles: 'ignore',
@@ -37,7 +46,9 @@ app.use(express.static(client_files, {
 
 app.use('/api/trpc', trpcExpressMiddleware);
 
-app.use((req, res, next) => {
+app.use('/api/auth', auth_router);
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     res.sendFile(resolve(client_files, 'index.html'), (err) => {
         if (err) {
             next(err);

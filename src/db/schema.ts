@@ -2,9 +2,52 @@ import { relations } from "drizzle-orm";
 import { mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 import { nanoid } from "nanoid";
 
+export const users = mysqlTable("users", {
+    id: varchar("id", { length: 255 }).primaryKey(),
+    email: text("email").notNull(),
+    created_at: timestamp("created_at").notNull().defaultNow(),
+    updated_at: timestamp("updated_at").notNull().defaultNow(),
+})
+
+export const userRelations = relations(users, ({ many }) => ({
+    organization_memberships: many(organization_memberships),
+}))
+
+export const organizations = mysqlTable("organizations", {
+    id: varchar("id", { length: 255 }).primaryKey(),
+    name: text("name").notNull(),
+    created_at: timestamp("created_at").notNull().defaultNow(),
+    updated_at: timestamp("updated_at").notNull().defaultNow(),
+})
+
+export const organizationRelations = relations(organizations, ({ many }) => ({
+    organization_memberships: many(organization_memberships),
+}))
+
+export const organization_memberships = mysqlTable("organization_memberships", {
+    id: varchar("id", { length: 255 }).primaryKey(),
+    user_id: varchar("user_id", { length: 255 }).notNull(),
+    organization_id: varchar("organization_id", { length: 255 }).notNull(),
+    role_slug: varchar("role_slug", { length: 255 }).notNull(),
+    status: varchar("status", { length: 255, enum: ['pending', 'active', 'inactive'] }).notNull(),
+    created_at: timestamp("created_at").notNull().defaultNow(),
+    updated_at: timestamp("updated_at").notNull().defaultNow(),
+})
+
+export const organization_membershipRelations = relations(organization_memberships, ({ one }) => ({
+    user: one(users, {
+        fields: [organization_memberships.user_id],
+        references: [users.id],
+    }),
+    organization: one(organizations, {
+        fields: [organization_memberships.organization_id],
+        references: [organizations.id],
+    }),
+}))
+
 export const workers = mysqlTable("workers", {
     id: varchar("id", { length: 21 }).primaryKey().$defaultFn(() => nanoid()),
-    user_id: text("user_id").notNull(),
+    organization_id: varchar("organization_id", { length: 255 }).notNull(),
     name: text("name").notNull(),
     created_at: timestamp("created_at").notNull().defaultNow(),
     updated_at: timestamp("updated_at").notNull().defaultNow(),
@@ -12,9 +55,13 @@ export const workers = mysqlTable("workers", {
     compatibility_date: text("compatibility_date").notNull(),
 })
 
-export const workers_relations = relations(workers, ({ many }) => ({
+export const workers_relations = relations(workers, ({ many, one }) => ({
     modules: many(modules),
     hostnames: many(hostnames),
+    organization: one(organizations, {
+        fields: [workers.organization_id],
+        references: [organizations.id],
+    }),
 }))
 
 export const modules = mysqlTable("modules", {
