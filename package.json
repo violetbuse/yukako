@@ -17,7 +17,7 @@
         "dev:server": "concurrently --raw \"npm run watch:server\" \"nodemon dist/index.cjs serve\"",
         "dev:client": "vite --port 5173",
         "dev:webhook": "lt --port 3000 --subdomain viowet-yukako",
-        "dev": "concurrently --names \"server,client\" --prefix-colors \"blue,green\" \"npm run dev:server\" \"npm run dev:client\"",
+        "dev": "concurrently --names \"server,client,webhook\" --prefix-colors \"blue,green,red\" \"npm run dev:server\" \"npm run dev:client\" \"npm run dev:webhook\"",
         "start": "node dist/index.cjs serve",
         "generate": "./generate_workerd.sh",
         "package": "rm -rf dist/pkg && pkg ."
