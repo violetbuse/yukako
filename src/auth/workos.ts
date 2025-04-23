@@ -1,4 +1,7 @@
+import { db } from "@/db";
+import { organization_memberships } from "@/db/schema";
 import { User, WorkOS } from "@workos-inc/node";
+import { and, eq, isNull } from "drizzle-orm";
 import { Response, Request, NextFunction } from "express";
 
 export const WORKOS_CLIENT_ID = process.env.WORKOS_CLIENT_ID!;
@@ -23,7 +26,7 @@ declare global {
     namespace Express {
         interface Request {
             user: User | null | undefined;
-            organization_id: string | null | undefined;
+            organization_ids: string[] | null | undefined;
         }
     }
 }
@@ -38,7 +41,16 @@ export const with_auth = async (req: Request, res: Response, next: NextFunction)
 
     if (session.authenticated) {
         req.user = session.user;
-        req.organization_id = session.organizationId;
+
+        const organizations = await db.query.organization_memberships.findMany({
+            where: and(
+                eq(organization_memberships.user_id, session.user.id),
+                isNull(organization_memberships.deleted_at)
+            ),
+        });
+
+        req.organization_ids = organizations.map((organization) => organization.organization_id);
+
         next();
         return;
     }
@@ -61,7 +73,16 @@ export const with_auth = async (req: Request, res: Response, next: NextFunction)
         }
 
         req.user = session.user;
-        req.organization_id = session.organizationId;
+
+        const organizations = await db.query.organization_memberships.findMany({
+            where: and(
+                eq(organization_memberships.user_id, session.user.id),
+                isNull(organization_memberships.deleted_at)
+            ),
+        });
+
+        req.organization_ids = organizations.map((organization) => organization.organization_id);
+
         next();
         return;
     } catch (error) {

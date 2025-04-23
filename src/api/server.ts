@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { organization_memberships } from "@/db/schema";
 import { initTRPC } from "@trpc/server";
 import * as trpcExpress from "@trpc/server/adapters/express";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -16,7 +16,8 @@ const createContext = async ({ req, res }: trpcExpress.CreateExpressContextOptio
     const active_organizations = await db.query.organization_memberships.findMany({
         where: and(
             eq(organization_memberships.user_id, user_id ?? ''),
-            eq(organization_memberships.status, 'active')
+            eq(organization_memberships.status, 'active'),
+            isNull(organization_memberships.deleted_at)
         )
     })
 

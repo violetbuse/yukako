@@ -113,6 +113,12 @@ router.post('/webhook', async (req, res) => {
                             updated_at: new Date()
                         });
                     }
+                } else {
+                    await db.update(organizations)
+                        .set({
+                            deleted_at: new Date()
+                        })
+                        .where(eq(organizations.id, org.id));
                 }
             } catch (error) {
                 console.error("error", error);
@@ -150,6 +156,12 @@ router.post('/webhook', async (req, res) => {
                             updated_at: new Date()
                         });
                     }
+                } else {
+                    await db.update(users)
+                        .set({
+                            deleted_at: new Date()
+                        })
+                        .where(eq(users.id, user.id));
                 }
             } catch (error) {
                 console.error("error", error);
@@ -200,7 +212,10 @@ router.post('/webhook', async (req, res) => {
                     }
                 } else {
                     // Handle deletion of organization membership
-                    await db.delete(organization_memberships)
+                    await db.update(organization_memberships)
+                        .set({
+                            deleted_at: new Date()
+                        })
                         .where(eq(organization_memberships.id, org_membership.id));
                 }
             } catch (error) {

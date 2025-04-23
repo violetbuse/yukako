@@ -7,6 +7,7 @@ export const users = mysqlTable("users", {
     email: text("email").notNull(),
     created_at: timestamp("created_at").notNull().defaultNow(),
     updated_at: timestamp("updated_at").notNull().defaultNow(),
+    deleted_at: timestamp("deleted_at"),
 })
 
 export const userRelations = relations(users, ({ many }) => ({
@@ -18,6 +19,7 @@ export const organizations = mysqlTable("organizations", {
     name: text("name").notNull(),
     created_at: timestamp("created_at").notNull().defaultNow(),
     updated_at: timestamp("updated_at").notNull().defaultNow(),
+    deleted_at: timestamp("deleted_at"),
 })
 
 export const organizationRelations = relations(organizations, ({ many }) => ({
@@ -32,6 +34,7 @@ export const organization_memberships = mysqlTable("organization_memberships", {
     status: varchar("status", { length: 255, enum: ['pending', 'active', 'inactive'] }).notNull(),
     created_at: timestamp("created_at").notNull().defaultNow(),
     updated_at: timestamp("updated_at").notNull().defaultNow(),
+    deleted_at: timestamp("deleted_at"),
 })
 
 export const organization_membershipRelations = relations(organization_memberships, ({ one }) => ({
