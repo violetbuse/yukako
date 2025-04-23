@@ -1,9 +1,10 @@
-import { useTRPC } from "@/client/trpc_client"
-import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@workos-inc/authkit-react";
 
 export const HomeNavbar = () => {
-    const trpc = useTRPC();
-    const self_query = useQuery(trpc.user.self.queryOptions());
+    const { user, isLoading, signIn, signOut } = useAuth();
+
+    console.log("user", user);
+    console.log("isLoading", isLoading);
 
     return (
         <nav className="bg-gray-800">
@@ -15,20 +16,15 @@ export const HomeNavbar = () => {
                         </a>
                     </div>
                     <div className="flex items-center">
-                        {self_query.data ? (
-                            <a
-                                href="/api/auth/logout"
-                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                            >
-                                Logout
-                            </a>
-                        ) : (
-                            <a
-                                href="/api/auth/login"
-                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                            >
+                        {!isLoading && !user && (
+                            <button onClick={() => signIn()}>
                                 Login
-                            </a>
+                            </button>
+                        )}
+                        {user && (
+                            <button onClick={() => signOut()}>
+                                Logout
+                            </button>
                         )}
                     </div>
                 </div>

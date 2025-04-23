@@ -6,6 +6,9 @@ import { TRPCProvider } from '@/client/trpc_client';
 import { HomeNavbar } from '@/client/components/navbar';
 import { Route, Switch } from 'wouter';
 import { Home } from '@/client/pages/home';
+import { WorkOsWidgets } from '@workos-inc/widgets'
+import { AccountManagement } from '@/client/pages/account_management';
+import { AuthKitProvider } from '@workos-inc/authkit-react';
 
 function makeQueryClient() {
     return new QueryClient({
@@ -27,6 +30,7 @@ function getQueryClient() {
 }
 
 const trpcURL = `${window.location.origin}/api/trpc`;
+const redirectUri = `${window.location.origin}/login`;
 
 function App() {
     const queryClient = getQueryClient();
@@ -43,9 +47,14 @@ function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
-                <Switch>
-                    <Route path="/" component={Home} />
-                </Switch>
+                <AuthKitProvider clientId={import.meta.env.VITE_PUBLIC_WORKOS_CLIENT_ID} redirectUri={redirectUri}>
+                    <WorkOsWidgets>
+                        <Switch>
+                            <Route path="/" component={Home} />
+                            <Route path="/account" component={AccountManagement} />
+                        </Switch>
+                    </WorkOsWidgets>
+                </AuthKitProvider>
             </TRPCProvider>
         </QueryClientProvider>
     )

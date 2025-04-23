@@ -5,6 +5,9 @@ import { nanoid } from "nanoid";
 export const users = mysqlTable("users", {
     id: varchar("id", { length: 255 }).primaryKey(),
     email: text("email").notNull(),
+    first_name: text("first_name"),
+    last_name: text("last_name"),
+    pfp_url: text("pfp_url"),
     created_at: timestamp("created_at").notNull().defaultNow(),
     updated_at: timestamp("updated_at").notNull().defaultNow(),
     deleted_at: timestamp("deleted_at"),

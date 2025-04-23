@@ -8,7 +8,7 @@ const router = Router();
 
 router.get('/login', (req, res) => {
     const host = req.headers.host;
-    const protocol = req.protocol;
+    const protocol = req.headers.host?.includes('localhost') ? 'http' : 'https';
     const redirect_uri = `${protocol}://${host}/api/auth/callback`;
 
     console.log("redirect_uri", redirect_uri);
@@ -30,24 +30,40 @@ router.get('/callback', async (req, res) => {
         return;
     }
 
-    const { user, sealedSession } = await workos.userManagement.authenticateWithCode({
-        code: code as string,
-        clientId: WORKOS_CLIENT_ID,
-        session: {
-            sealSession: true,
-            cookiePassword: WORKOS_COOKIE_PASSWORD,
+    try {
+        const { user, sealedSession } = await workos.userManagement.authenticateWithCode({
+            code: code as string,
+            clientId: WORKOS_CLIENT_ID,
+            session: {
+                sealSession: true,
+                cookiePassword: WORKOS_COOKIE_PASSWORD,
+            }
+        });
+
+        console.log("user", user);
+
+        await sync_user(user.id);
+
+        const protocol = req.headers.host?.includes('localhost') ? 'http' : 'https';
+        const returnTo = `${protocol}://${req.headers.host}/account`;
+        const auth_redirect = `${protocol}://${req.headers.host}/api/auth/login`;
+
+        console.log("auth_redirect", auth_redirect);
+        console.log("returnTo", returnTo);
+
+        if (!user || !sealedSession) {
+            console.log("redirecting to auth_redirect");
+            res.redirect(auth_redirect);
+            return;
         }
-    });
 
-    await sync_user(user.id);
-
-    if (!user || !sealedSession) {
-        res.redirect('/api/auth/login');
+        save_sealed_session(sealedSession, res);
+        res.redirect(returnTo);
+    } catch (error) {
+        console.error("error", error);
+        res.status(500).json({ error: 'Internal server error' });
         return;
     }
-
-    save_sealed_session(sealedSession, res);
-    res.redirect('/');
 })
 
 router.get('/logout', async (req, res) => {
@@ -56,9 +72,15 @@ router.get('/logout', async (req, res) => {
         cookiePassword: WORKOS_COOKIE_PASSWORD,
     });
 
+    const protocol = req.headers.host?.includes('localhost') ? 'http' : 'https';
+    const returnTo = `${protocol}://${req.headers.host}/`;
+    console.log("returnTo", returnTo);
+
     const url = await session.getLogoutUrl({
-        returnTo: `${req.protocol}://${req.headers.host}/`,
+        returnTo
     });
+
+    console.log("url", url);
 
     res.clearCookie('wos-session');
     res.redirect(url);
@@ -148,6 +170,9 @@ router.post('/webhook', async (req, res) => {
                         await db.update(users)
                             .set({
                                 email: email,
+                                first_name: workos_user.firstName,
+                                last_name: workos_user.lastName,
+                                pfp_url: workos_user.profilePictureUrl,
                                 updated_at: new Date()
                             })
                             .where(eq(users.id, user.id));
@@ -156,6 +181,9 @@ router.post('/webhook', async (req, res) => {
                         await db.insert(users).values({
                             id: user.id,
                             email: email,
+                            first_name: workos_user.firstName,
+                            last_name: workos_user.lastName,
+                            pfp_url: workos_user.profilePictureUrl,
                             created_at: new Date(),
                             updated_at: new Date()
                         });

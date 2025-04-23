@@ -1,9 +1,10 @@
 import { trpc_context_auth } from "@/auth/workos";
 import { db } from "@/db";
 import { organization_memberships } from "@/db/schema";
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { and, eq, isNull } from "drizzle-orm";
+import { z } from "zod";
 
 export const t = initTRPC.context<Context>().create();
 
@@ -36,26 +37,31 @@ export const createTRPCServerContext = async ({ req, res }: trpcExpress.CreateEx
     }
 }
 
-// export const authed_procedure = t.procedure.use(async ({ ctx, next }) => {
-//     if (!ctx.user) {
-//         throw new TRPCError({ code: 'UNAUTHORIZED' });
-//     }
+export const authed_procedure = t.procedure.use(async ({ ctx, next }) => {
+    if (!ctx.user) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+    }
 
-//     const new_ctx = {
-//         user_id: ctx.user as string,
-//         organization_ids: ctx.organization_ids
-//     }
+    const new_ctx = {
+        user_id: ctx.user as string,
+        organization_ids: ctx.organization_ids
+    }
 
-//     return next({ ctx: new_ctx });
-// })
+    return next({ ctx: new_ctx });
+})
 
-// export const organization_procedure = t.procedure.input(z.string()).use(async ({ ctx, input, next }) => {
-//     if (!ctx.organization_ids.includes(input)) {
-//         throw new TRPCError({ code: 'FORBIDDEN' });
-//     }
+export const organization_procedure = t.procedure.input(z.string()).use(async ({ ctx, input, next }) => {
 
-//     return next({ ctx });
-// })
+    if (!ctx.user) {
+        throw new TRPCError({ code: 'UNAUTHORIZED' });
+    }
+
+    if (!ctx.organization_ids.includes(input)) {
+        throw new TRPCError({ code: 'FORBIDDEN' });
+    }
+
+    return next({ ctx });
+})
 
 type Context = {
     user: string | null;

@@ -1,5 +1,5 @@
-import { public_procedure, router } from "@/api/server";
-import { sync_user } from "@/auth/workos";
+import { authed_procedure, public_procedure, router } from "@/api/server";
+import { sync_user, workos } from "@/auth/workos";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -50,6 +50,18 @@ export const user_router = router({
             id: user.id,
             email: user.email,
             organizations,
+        }
+    }),
+    widget_token: authed_procedure.output(z.object({
+        token: z.string(),
+    })).query(async ({ ctx }) => {
+        const authToken = await workos.widgets.getToken({
+            userId: ctx.user_id,
+            organizationId: ctx.organization_ids[0] || ''
+        });
+
+        return {
+            token: authToken,
         }
     })
 })

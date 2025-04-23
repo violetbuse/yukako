@@ -24,14 +24,6 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan('tiny'));
 
-app.use(express.static(client_files, {
-    dotfiles: 'ignore',
-    index: "index.html",
-    redirect: true,
-    extensions: ['html', 'htm'],
-    fallthrough: true,
-}));
-
 // app.use('/__yukako*', (req, res, next) => {
 //     const local_auth_secret = process.env.LOCAL_AUTH_TOKEN;
 //     if (!local_auth_secret) {
@@ -53,6 +45,14 @@ app.use('/api/trpc', trpcExpress.createExpressMiddleware({
 }));
 
 app.use('/api/auth', auth_router);
+
+app.use(express.static(client_files, {
+    dotfiles: 'ignore',
+    index: "index.html",
+    redirect: true,
+    extensions: ['html', 'htm'],
+    fallthrough: false,
+}));
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     res.sendFile(resolve(client_files, 'index.html'), (err) => {
