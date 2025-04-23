@@ -1,1 +1,62 @@
 @import "tailwindcss";
+
+body {
+    background-color: #1a202c; /* Dark background */
+    color: #cbd5e0; /* Light text color */
+    font-family: 'Inter', sans-serif;
+}
+
+a {
+    color: #63b3ed; /* Light blue for links */
+    text-decoration: none;
+}
+
+a:hover {
+    color: #4299e1; /* Darker blue on hover */
+}
+
+button {
+    background-color: #2d3748; /* Dark button background */
+    color: #edf2f7; /* Light button text */
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #4a5568; /* Slightly lighter on hover */
+}
+
+input, textarea {
+    background-color: #2d3748; /* Dark input background */
+    color: #edf2f7; /* Light input text */
+    border: 1px solid #4a5568; /* Border color */
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+}
+
+input::placeholder, textarea::placeholder {
+    color: #a0aec0; /* Placeholder text color */
+}
+
+.navbar {
+    background-color: #2d3748; /* Dark navbar background */
+    color: #edf2f7; /* Light navbar text */
+}
+
+.footer {
+    background-color: #2d3748; /* Dark footer background */
+    color: #edf2f7; /* Light footer text */
+    padding: 1rem;
+    text-align: center;
+}
+
+.card {
+    background-color: #2d3748; /* Dark card background */
+    color: #edf2f7; /* Light card text */
+    border-radius: 0.375rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin: 1rem 0;
+}

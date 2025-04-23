@@ -3,7 +3,9 @@ import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import { AppRouter } from '@/api/routers';
 import React, { useState } from 'react'
 import { TRPCProvider } from '@/client/trpc_client';
-import { Navbar } from '@/client/components/navbar';
+import { HomeNavbar } from '@/client/components/navbar';
+import { Route, Switch } from 'wouter';
+import { Home } from '@/client/pages/home';
 
 function makeQueryClient() {
     return new QueryClient({
@@ -41,14 +43,9 @@ function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
-                <Navbar />
-                <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-
-                    <div className="bg-white p-8 rounded-lg shadow-md">
-                        <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to Yukako</h1>
-                        <p className="text-gray-600">Your React application is ready!</p>
-                    </div>
-                </div>
+                <Switch>
+                    <Route path="/" component={Home} />
+                </Switch>
             </TRPCProvider>
         </QueryClientProvider>
     )

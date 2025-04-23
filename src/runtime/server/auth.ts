@@ -1,4 +1,4 @@
-import { save_sealed_session, workos, WORKOS_CLIENT_ID, WORKOS_COOKIE_PASSWORD, WORKOS_WEBHOOK_SECRET } from "@/auth/workos";
+import { save_sealed_session, sync_user, workos, WORKOS_CLIENT_ID, WORKOS_COOKIE_PASSWORD, WORKOS_WEBHOOK_SECRET } from "@/auth/workos";
 import { db } from "@/db";
 import { organization_memberships, organizations, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -10,6 +10,8 @@ router.get('/login', (req, res) => {
     const host = req.headers.host;
     const protocol = req.protocol;
     const redirect_uri = `${protocol}://${host}/api/auth/callback`;
+
+    console.log("redirect_uri", redirect_uri);
 
     const auth_url = workos.userManagement.getAuthorizationUrl({
         provider: 'authkit',
@@ -36,6 +38,8 @@ router.get('/callback', async (req, res) => {
             cookiePassword: WORKOS_COOKIE_PASSWORD,
         }
     });
+
+    await sync_user(user.id);
 
     if (!user || !sealedSession) {
         res.redirect('/api/auth/login');
