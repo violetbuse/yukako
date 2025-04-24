@@ -1,4 +1,4 @@
-import { HomeNavbarHorizontalPadding } from "@/client/components/navbar"
+import { HomeNavbarHorizontalPadding } from "@/client/components/home_navbar"
 import { MainLayout } from "@/client/layouts/main"
 
 export const Home = () => {

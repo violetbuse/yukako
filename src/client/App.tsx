@@ -3,7 +3,7 @@ import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import { AppRouter } from '@/api/routers';
 import React, { useEffect, useState } from 'react'
 import { TRPCProvider } from '@/client/trpc_client';
-import { HomeNavbar } from '@/client/components/navbar';
+import { HomeNavbar } from '@/client/components/home_navbar';
 import { Route, Switch } from 'wouter';
 import { Home } from '@/client/pages/home';
 import { AdminHome } from '@/client/pages/admin/main';

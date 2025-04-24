@@ -63,7 +63,7 @@ const AdminSidebar = () => {
     return (
         <Sidebar variant="inset" collapsible="icon">
             <SidebarHeader>
-                <h1 className="text-lg font-semibold">Yukako</h1>
+                {open && <h1 className="text-lg font-semibold truncate">Yukako</h1>}
                 <h3 className="text-sm text-muted-foreground truncate">{selected_worker_name || "No worker selected"}</h3>
             </SidebarHeader>
             <SidebarContent>
@@ -93,7 +93,7 @@ const SidebarFiles = () => {
                         <CollapsibleTrigger asChild>
                             <SidebarMenuButton tooltip="Worker Source Code">
                                 <Code />
-                                <span className="ml-2 truncate">Code</span>
+                                <span className="ml-2 truncate">Source Code</span>
                                 <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                             </SidebarMenuButton>
                         </CollapsibleTrigger>

@@ -6,7 +6,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/client/components/ui/dialog";
 import { Input } from "@/client/components/ui/input";
 import { TRPCError } from "@trpc/server";
-import { ChevronDown, Plus } from "lucide-react";
+import { ChevronDown, Code, Plus } from "lucide-react";
 import Cookies from "js-cookie";
 
 export const WORKER_ID_COOKIE_NAME = "yukako_worker_id";
@@ -40,7 +40,11 @@ export const WorkerProvider = ({ children }: WorkerProviderProps) => {
         return sorted_workers;
     }, [workers.data]);
 
-    const [selectedWorker, setSelectedWorker] = useState<string | null>(null);
+    const [selectedWorker, setSelectedWorker] = useState<string | null>(() => {
+        const worker_id = Cookies.get(WORKER_ID_COOKIE_NAME);
+        return worker_id ?? null;
+    });
+
     const { selected_worker_id, selected_worker_name } = useMemo(() => {
         const selected_worker_id = selectedWorker ? workers.data?.find((worker) => worker.id === selectedWorker)?.id ?? null : null;
         const selected_worker_name = selectedWorker ? workers.data?.find((worker) => worker.id === selectedWorker)?.name ?? null : null;
@@ -131,10 +135,11 @@ export const WorkerSwitcher = () => {
                 <DropdownMenuContent className="p-0 rounded-sm min-w-48">
                     {workers.map((worker) => (
                         <DropdownMenuItem
-                            className={`px-6 py-3 rounded-none hover:bg-foreground/15 hover:text-foreground ${selected_worker_id === worker.id ? 'text-foreground bg-foreground/5' : 'text-muted-foreground'}`}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-none hover:bg-foreground/15 hover:text-foreground ${selected_worker_id === worker.id ? 'text-foreground bg-foreground/5' : 'text-muted-foreground'}`}
                             key={worker.id}
                             onClick={() => setSelectedWorker(worker.id)}
                         >
+                            <Code className="w-4 h-4" />
                             {worker.name}
                         </DropdownMenuItem>
                     ))}

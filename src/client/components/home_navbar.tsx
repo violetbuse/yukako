@@ -20,19 +20,10 @@ export const HomeNavbar = () => {
                             Yukako
                         </Link>
                         <SignedIn>
-                            <p className="text-primary text-lg ml-4 mr-3">/</p>
-                            <OrganizationSwitcher afterCreateOrganizationUrl="/admin" />
-                            <p className="text-primary text-lg ml-4 mr-3">/</p>
-                            <WorkerSwitcher />
-                            {!is_admin && (
-                                <>
-                                    <p className="text-primary text-lg ml-4 mr-3">/</p>
-                                    <Link href="/admin" className="text-muted-foreground text-sm flex items-center">
-                                        Dashboard
-                                        <ExternalLink className="w-4 h-4 ml-1" />
-                                    </Link>
-                                </>
-                            )}
+                            <Link href="/admin" className="text-muted-foreground text-sm flex items-center">
+                                Dashboard
+                                <ExternalLink className="w-4 h-4 ml-1" />
+                            </Link>
                         </SignedIn>
                     </div>
                     <div className="flex items-center">

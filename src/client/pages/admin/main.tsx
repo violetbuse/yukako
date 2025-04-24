@@ -1,4 +1,4 @@
-import { HomeNavbar, HomeNavbarHorizontalPadding } from "@/client/components/navbar";
+import { HomeNavbar, HomeNavbarHorizontalPadding } from "@/client/components/home_navbar";
 import { AdminLayout } from "@/client/layouts/admin";
 import { useTRPC } from "@/client/trpc_client";
 import { OrganizationProfile, useAuth } from "@clerk/clerk-react";

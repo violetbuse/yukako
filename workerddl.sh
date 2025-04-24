@@ -30,7 +30,11 @@ curl -L https://capnproto.org/capnproto-c++-1.1.0.tar.gz -o $TEMP_DIR/capnproto-
 tar -xzf $TEMP_DIR/capnproto-c++-1.1.0.tar.gz -C $TEMP_DIR
 
 # from the capnproto directory, copy the /src/capnp/ folder to the workerd/capnp/ directory
-cp -r $TEMP_DIR/capnproto-c++-1.1.0/src/capnp $WORKERD_DIR/capnp
+# old command copied the whole dir: cp -r $TEMP_DIR/capnproto-c++-1.1.0/src/capnp $WORKERD_DIR/capnp
+
+# copy capnp/c++.capnp to workerd/capnp/c++.capnp
+mkdir -p $WORKERD_DIR/capnp
+cp $TEMP_DIR/capnproto-c++-1.1.0/src/capnp/c++.capnp $WORKERD_DIR/capnp/c++.capnp
 
 # download the workerd schema
 curl -L https://github.com/cloudflare/workerd/raw/main/src/workerd/server/workerd.capnp -o $WORKERD_DIR/workerd.capnp
