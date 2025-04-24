@@ -6,7 +6,7 @@ import { ThemeProvider } from '@/client/components/theme-provider'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <ThemeProvider>
+        <ThemeProvider defaultTheme="dark">
             <App />
         </ThemeProvider>
     </React.StrictMode>,

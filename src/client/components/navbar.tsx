@@ -36,15 +36,15 @@ export const HomeNavbar = () => {
                         </SignedIn>
                     </div>
                     <div className="flex items-center">
-                        <ThemeButton />
                         <SignedOut>
                             <SignInButton mode="modal">
                                 <Button>Sign In</Button>
                             </SignInButton>
                         </SignedOut>
                         <SignedIn>
-                            <UserButton />
+                            <UserButton showName={true} />
                         </SignedIn>
+                        <ThemeButton className="ml-4" />
                     </div>
                 </div>
             </div>

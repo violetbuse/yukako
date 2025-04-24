@@ -13,7 +13,7 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             <SignedIn>
                 <SidebarProvider>
                     <AdminSidebar />
-                    <SidebarInset className="px-4 py-2">
+                    <SidebarInset className="p-2">
                         <header className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <SidebarTrigger />
