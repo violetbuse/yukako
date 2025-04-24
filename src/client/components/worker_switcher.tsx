@@ -90,17 +90,21 @@ export const WorkerSwitcher = () => {
                 setName={setNewWorkerName}
             />
             <DropdownMenu>
-                <DropdownMenuTrigger className="hover:bg-foreground/10 px-2 py-0.5 rounded text-sm text-muted-foreground flex items-center gap-2 focus:outline-none">
+                <DropdownMenuTrigger className="hover:bg-foreground/5 px-2 py-0.5 rounded text-sm text-muted-foreground flex items-center gap-2 focus:outline-none">
                     {selected_worker_name || "Select Worker"} <ChevronDown className="w-4 h-4 mt-0.5" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="p-0 rounded-sm">
+                <DropdownMenuContent className="p-0 rounded-sm min-w-48">
                     {sorted_workers.map((worker) => (
-                        <DropdownMenuItem className="px-6 py-3" key={worker.id} onClick={() => setSelectedWorker(worker.id)}>
+                        <DropdownMenuItem
+                            className={`px-6 py-3 rounded-none hover:bg-foreground/15 hover:text-foreground ${selectedWorker === worker.id ? 'text-foreground bg-foreground/5' : 'text-muted-foreground'}`}
+                            key={worker.id}
+                            onClick={() => setSelectedWorker(worker.id)}
+                        >
                             {worker.name}
                         </DropdownMenuItem>
                     ))}
-                    <DropdownMenuSeparator className="my-0 min-w-52" />
-                    <DropdownMenuItem className="px-6 py-3" onClick={() => setIsNewWorkerModalOpen(true)}>
+                    <DropdownMenuSeparator className="my-0.5" />
+                    <DropdownMenuItem className="px-6 py-3 rounded-none" onClick={() => setIsNewWorkerModalOpen(true)}>
                         <Plus className="w-4 h-4" />
                         New Worker
                     </DropdownMenuItem>
