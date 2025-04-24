@@ -1,10 +1,5 @@
-import { useAuth } from "@workos-inc/authkit-react";
 
 export const HomeNavbar = () => {
-    const { user, isLoading, signIn, signOut } = useAuth();
-
-    console.log("user", user);
-    console.log("isLoading", isLoading);
 
     return (
         <nav className="bg-gray-800">
@@ -16,16 +11,6 @@ export const HomeNavbar = () => {
                         </a>
                     </div>
                     <div className="flex items-center">
-                        {!isLoading && !user && (
-                            <button onClick={() => signIn()}>
-                                Login
-                            </button>
-                        )}
-                        {user && (
-                            <button onClick={() => signOut()}>
-                                Logout
-                            </button>
-                        )}
                     </div>
                 </div>
             </div>

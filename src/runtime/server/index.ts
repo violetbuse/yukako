@@ -44,8 +44,6 @@ app.use('/api/trpc', trpcExpress.createExpressMiddleware({
     createContext: createTRPCServerContext
 }));
 
-app.use('/api/auth', auth_router);
-
 app.use(express.static(client_files, {
     dotfiles: 'ignore',
     index: "index.html",
