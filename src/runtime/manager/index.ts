@@ -1,6 +1,8 @@
 import { db } from "@/db";
 import hash from "object-hash";
 import { WorkerConfig } from "@/runtime/config";
+import { isNotNull } from "drizzle-orm";
+import { workers } from "@/db/schema";
 
 export class Manager {
     private static instance: Manager;
@@ -25,19 +27,19 @@ export class Manager {
     }
 
     private async poll_db_for_workers() {
-        const workers = await db.query.workers.findMany({
+        const worker_list = await db.query.workers.findMany({
             with: {
                 modules: true,
                 hostnames: true
             }
         });
 
-        const worker_hash = hash(workers, { algorithm: "md5" });
+        const worker_hash = hash(worker_list, { algorithm: "md5" });
 
         if (worker_hash !== this.workers_hash) {
             this.workers_hash = worker_hash;
 
-            const config: WorkerConfig[] = workers.map(worker => ({
+            const config: WorkerConfig[] = worker_list.map(worker => ({
                 id: worker.id,
                 main_script: worker.entrypoint,
                 compatibility_date: worker.compatibility_date,

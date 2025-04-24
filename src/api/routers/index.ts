@@ -1,10 +1,8 @@
+import { workers_router } from "@/api/routers/workers";
 import { public_procedure, router } from "@/api/server";
 
 export const appRouter = router({
-    me: public_procedure.query(async ({ ctx }) => {
-        console.log({ ctx })
-        return ctx
-    })
+    workers: workers_router
 })
 
 export type AppRouter = typeof appRouter;

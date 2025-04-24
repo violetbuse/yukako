@@ -7,7 +7,14 @@ import { HomeNavbar } from '@/client/components/navbar';
 import { Route, Switch } from 'wouter';
 import { Home } from '@/client/pages/home';
 import { AdminHome } from '@/client/pages/admin/home';
-import { useAuth } from '@clerk/clerk-react';
+import { ClerkProvider } from '@clerk/clerk-react';
+import { useTheme } from '@/client/components/theme-provider';
+import { dark } from '@clerk/themes';
+import { QueryInvalidator } from '@/client/components/query-invalidator';
+
+if (!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY) {
+    throw new Error('CLERK_PUBLISHABLE_KEY is not set');
+}
 
 function makeQueryClient() {
     return new QueryClient({
@@ -40,23 +47,20 @@ function App() {
         ]
     }));
 
-    const { isSignedIn, userId, orgId, orgRole } = useAuth()
-
-    useEffect(() => {
-        // when auth state changes, invalidate all queries
-        queryClient.invalidateQueries()
-    }, [isSignedIn, userId, orgId, orgRole])
-
+    const { theme } = useTheme();
 
     return (
-        <QueryClientProvider client={queryClient}>
-            <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
-                <Switch>
-                    <Route path="/" component={Home} />
-                    <Route path="/admin" component={AdminHome} />
-                </Switch>
-            </TRPCProvider>
-        </QueryClientProvider>
+        <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY} appearance={{ baseTheme: theme === "dark" ? dark : undefined }}>
+            <QueryClientProvider client={queryClient}>
+                <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
+                    <QueryInvalidator />
+                    <Switch>
+                        <Route path="/" component={Home} />
+                        <Route path="/admin" component={AdminHome} />
+                    </Switch>
+                </TRPCProvider>
+            </QueryClientProvider>
+        </ClerkProvider>
     )
 }
 
