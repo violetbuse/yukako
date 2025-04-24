@@ -2,12 +2,13 @@ import { OrganizationSwitcher, SignedIn, SignedOut, SignInButton, UserButton } f
 import { Link } from "wouter";
 import { WorkerSwitcher } from "./worker_switcher";
 import { useTheme } from "@/client/components/theme-provider";
-import { MoonIcon, SunIcon } from "lucide-react";
+import { ExternalLink, MoonIcon, SunIcon } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
 
 export const HomeNavbar = () => {
 
     const { theme, setTheme } = useTheme();
+    const is_admin = window.location.pathname.includes("/admin");
 
     return (
         <nav className="">
@@ -22,14 +23,25 @@ export const HomeNavbar = () => {
                             <OrganizationSwitcher afterCreateOrganizationUrl="/admin" />
                             <p className="text-primary text-lg ml-4 mr-3">/</p>
                             <WorkerSwitcher />
+                            {!is_admin && (
+                                <>
+                                    <p className="text-primary text-lg ml-4 mr-3">/</p>
+                                    <Link href="/admin" className="text-muted-foreground text-sm flex items-center">
+                                        Dashboard
+                                        <ExternalLink className="w-4 h-4 ml-1" />
+                                    </Link>
+                                </>
+                            )}
                         </SignedIn>
                     </div>
                     <div className="flex items-center">
-                        <Button variant="ghost" className="px-2 mr-4" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-                            {theme === "dark" ? <MoonIcon /> : <SunIcon />}
+                        <Button variant="outline" className="px-2.5 mr-4 shadow-xs" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+                            {theme === "dark" ? <MoonIcon className="w-4 h-4" /> : <SunIcon className="w-4 h-4" />}
                         </Button>
                         <SignedOut>
-                            <SignInButton />
+                            <SignInButton mode="modal">
+                                <Button>Sign In</Button>
+                            </SignInButton>
                         </SignedOut>
                         <SignedIn>
                             <UserButton />

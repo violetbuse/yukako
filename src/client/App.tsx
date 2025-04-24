@@ -11,6 +11,7 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import { useTheme } from '@/client/components/theme-provider';
 import { dark } from '@clerk/themes';
 import { QueryInvalidator } from '@/client/components/query-invalidator';
+import { NotFound } from '@/client/pages/404';
 
 if (!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY) {
     throw new Error('CLERK_PUBLISHABLE_KEY is not set');
@@ -56,7 +57,8 @@ function App() {
                     <QueryInvalidator />
                     <Switch>
                         <Route path="/" component={Home} />
-                        <Route path="/admin" component={AdminHome} />
+                        {/* <Route path="/admin" component={AdminHome} /> */}
+                        <Route component={NotFound} />
                     </Switch>
                 </TRPCProvider>
             </QueryClientProvider>
