@@ -67,6 +67,7 @@ export const createTRPCServerContext = async ({ req, res }: trpcExpress.CreateEx
             org_role: null,
             org_slug: null,
             token,
+            owner_id: auth.userId,
             worker_id
         }
     }
@@ -78,6 +79,7 @@ export const createTRPCServerContext = async ({ req, res }: trpcExpress.CreateEx
             org_role: null,
             org_slug: null,
             token,
+            owner_id: auth.userId,
             worker_id
         }
     }
@@ -88,6 +90,7 @@ export const createTRPCServerContext = async ({ req, res }: trpcExpress.CreateEx
         org_role: auth.orgRole,
         org_slug: auth.orgSlug,
         token,
+        owner_id: auth.orgId,
         worker_id
     }
 }
@@ -109,5 +112,6 @@ type Context = {
     org_slug: string
 }) & {
     token: string
+    owner_id: string
     worker_id: string | null
 })

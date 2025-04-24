@@ -53,5 +53,60 @@ export const workers_router = router({
         })
 
         return worker_id
+    }),
+    get_source: public_procedure.query(async ({ ctx }) => {
+        if (!ctx.user_id) {
+            throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to view this page" })
+        }
+
+        if (!ctx.worker_id) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Worker ID is required" })
+        }
+
+        const worker = await db.query.workers.findFirst({
+            where: eq(workers.id, ctx.worker_id),
+            with: {
+                modules: true
+            }
+        })
+
+        if (!worker) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Worker not found" })
+        }
+
+        const entrypoint = {
+            id: '__entrypoint__',
+            name: 'worker.js (entrypoint)',
+            content: worker.entrypoint,
+            type: 'javascript'
+        }
+
+        const modules = worker.modules.map((module) => {
+            let content = module.es_module || module.cjs_module || module.text_module || module.data_module || module.wasm_module || module.json_module;
+            let type = '';
+
+            if (module.es_module) {
+                type = 'es_module';
+            } else if (module.cjs_module) {
+                type = 'cjs_module';
+            } else if (module.text_module) {
+                type = 'text_module';
+            } else if (module.data_module) {
+                type = 'data_module';
+            } else if (module.wasm_module) {
+                type = 'wasm_module';
+            } else if (module.json_module) {
+                type = 'json_module';
+            }
+
+            return {
+                id: module.id,
+                name: module.name,
+                content,
+                type
+            }
+        })
+
+        return [entrypoint, ...modules]
     })
 })
