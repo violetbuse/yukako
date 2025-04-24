@@ -55,4 +55,4 @@ export const generateConfigBinary = (config: Config): Buffer => {
     return Buffer.from(message.toArrayBuffer());
 }
 
-export * from "../generated/workerd_types";
+export * from "../../generated/workerd_types";

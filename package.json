@@ -23,6 +23,9 @@
         "package": "rm -rf dist/pkg && pkg ."
     },
     "dependencies": {
+        "@clerk/clerk-react": "^5.30.0",
+        "@clerk/express": "^1.4.9",
+        "@clerk/themes": "^2.2.36",
         "@openauthjs/openauth": "^0.4.3",
         "@tailwindcss/vite": "^4.1.4",
         "@tanstack/react-query": "^5.74.4",

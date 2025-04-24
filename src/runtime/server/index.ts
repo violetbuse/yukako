@@ -1,5 +1,5 @@
 import express from 'express';
-import { Config } from "@/config";
+import { Config } from "@/runtime/config";
 import http from 'http';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import { resolve } from 'path';
@@ -9,6 +9,7 @@ import { Request, Response, NextFunction } from 'express';
 import { appRouter } from '@/api/routers';
 import { createTRPCServerContext } from '@/api/server';
 import cookieParser from 'cookie-parser';
+import { clerkMiddleware } from '@clerk/express';
 
 const directory = __dirname;
 
@@ -17,6 +18,11 @@ const client_files = resolve(directory, "client")
 console.log(client_files);
 
 const app = express();
+
+app.use(clerkMiddleware({
+    publishableKey: process.env.VITE_PUBLIC_CLERK_PUBLISHABLE_KEY,
+    secretKey: process.env.CLERK_SECRET_KEY,
+}));
 
 app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 

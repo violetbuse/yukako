@@ -99,11 +99,19 @@ async function build(watch) {
 }
 
 // copy the workerd files to dist/workerd
-cpr('workerd', 'dist/workerd', {
-  deleteFirst: true,
-  overwrite: true,
-  confirm: true,
-});
+const copyWorkerdFiles = () => {
+  cpr('workerd', 'dist/workerd', {
+    deleteFirst: true,
+    overwrite: true,
+    confirm: true,
+  });
+
+  // Set permissions to executable for all files in dist/workerd
+  fs.readdirSync('dist/workerd').forEach(file => {
+    const filePath = path.join('dist/workerd', file);
+    fs.chmodSync(filePath, '755');
+  });
+}
 
 // Parse command line arguments
 const watch = process.argv.includes('--watch');

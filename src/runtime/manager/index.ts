@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import hash from "object-hash";
-import { WorkerConfig } from "@/config";
+import { WorkerConfig } from "@/runtime/config";
 
 export class Manager {
     private static instance: Manager;

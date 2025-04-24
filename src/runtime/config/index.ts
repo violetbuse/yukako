@@ -1,6 +1,6 @@
 import { Service, Worker_Binding, Config as WorkerdConfig } from "@/generated/workerd_types";
 import { builtin_worker_scripts } from "@/workers";
-import { generateConfigBinary } from "@/config/serialize";
+import { generateConfigBinary } from "@/runtime/config/serialize";
 
 export type Config = {
     backend_port: number;

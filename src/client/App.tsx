@@ -6,6 +6,7 @@ import { TRPCProvider } from '@/client/trpc_client';
 import { HomeNavbar } from '@/client/components/navbar';
 import { Route, Switch } from 'wouter';
 import { Home } from '@/client/pages/home';
+import { AdminHome } from '@/client/pages/admin/home';
 
 function makeQueryClient() {
     return new QueryClient({
@@ -27,7 +28,6 @@ function getQueryClient() {
 }
 
 const trpcURL = `${window.location.origin}/api/trpc`;
-const redirectUri = `${window.location.origin}/login`;
 
 function App() {
     const queryClient = getQueryClient();
@@ -39,13 +39,13 @@ function App() {
         ]
     }));
 
-    console.log(trpcURL);
 
     return (
         <QueryClientProvider client={queryClient}>
             <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
                 <Switch>
                     <Route path="/" component={Home} />
+                    <Route path="/admin" component={AdminHome} />
                 </Switch>
             </TRPCProvider>
         </QueryClientProvider>
