@@ -10,7 +10,6 @@ export const AdminHome = () => {
 
     return (
         <AdminLayout>
-            <h1>Admin</h1>
         </AdminLayout>
     )
 }

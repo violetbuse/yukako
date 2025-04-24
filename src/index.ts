@@ -1,16 +1,14 @@
 import 'dotenv/config';
-import serveCommand from '@/commands/serve';
+import { Runtime } from './runtime';
 
-import { Command } from 'commander';
+const backendPort = parseInt(process.env.BACKEND_PORT || '3000', 10);
+const workerdPort = parseInt(process.env.WORKERD_PORT || '8787', 10);
+const pollInterval = parseInt(process.env.POLL_INTERVAL || '10000', 10);
 
-const program = new Command();
+const runtime = new Runtime(backendPort, workerdPort, pollInterval);
+runtime.start();
 
-program
-    .name('yukako')
-    .description('CLI for managing the Yukako runtime')
-    .version('1.0.0');
-
-program.addCommand(serveCommand);
-
-program.parse(process.argv);
-
+process.on('SIGINT', async () => {
+    await runtime.stop();
+    process.exit(0);
+});

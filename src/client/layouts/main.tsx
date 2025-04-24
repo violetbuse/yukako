@@ -1,6 +1,6 @@
 import { HomeNavbar } from "@/client/components/navbar"
 
-export const MainLayout = ({ children }: { children: React.ReactNode }) => {
+export const MainLayout = ({ children }: { children?: React.ReactNode | React.ReactNode[] | undefined | null }) => {
     return (
         <div>
             <HomeNavbar />

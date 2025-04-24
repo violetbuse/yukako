@@ -23,6 +23,21 @@ const mainConfig = {
   ...logging_options
 };
 
+// Configuration for the main project build
+const cliConfig = {
+  entryPoints: ['src/commands/cli.ts'],
+  bundle: true,
+  outfile: 'dist/cli.cjs',
+  platform: 'node',
+  target: 'node18',
+  format: 'cjs',
+  sourcemap: true,
+  banner: {
+    // js: 'import * as build_banner_url from "url";\nimport * as build_banner_path from "path";\nconst __filename = build_banner_url.fileURLToPath(import.meta.url);\nconst __dirname = build_banner_path.dirname(__filename);'
+  },
+  ...logging_options
+};
+
 // Configuration for worker builds
 const workerConfig = {
   platform: 'node',
@@ -70,9 +85,13 @@ async function build(watch) {
       ...mainConfig,
     });
 
+    const cliBuildContext = await esbuild.context({
+      ...cliConfig,
+    });
+
     const workerBuildContexts = await buildWorkers(watch);
 
-    const contexts = [mainBuildContext, ...workerBuildContexts];
+    const contexts = [mainBuildContext, cliBuildContext, ...workerBuildContexts];
 
     // // Create package.json in dist to specify module type
     // const distPackageJson = {

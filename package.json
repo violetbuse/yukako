@@ -5,7 +5,7 @@
     "main": "dist/index.js",
     "type": "module",
     "bin": {
-        "yukako": "dist/index.cjs"
+        "yukako": "dist/cli.cjs"
     },
     "scripts": {
         "build:server": "node build.cjs",
@@ -14,13 +14,13 @@
         "watch:server": "node build.cjs --watch",
         "watch:client": "vite build --watch",
         "watch": "npm run watch:server & npm run watch:client",
-        "dev:server": "concurrently --raw \"npm run watch:server\" \"nodemon --enable-source-maps dist/index.cjs serve\"",
+        "dev:server": "concurrently --raw \"npm run watch:server\" \"nodemon --enable-source-maps dist/index.cjs\"",
         "dev:client": "vite --port 5173",
         "dev:webhook": "lt --port 3000 --subdomain viowet-yukako",
         "dev": "concurrently --names \"server,client,webhook\" --prefix-colors \"blue,green,red\" \"npm run dev:server\" \"npm run dev:client\" \"npm run dev:webhook\"",
-        "start": "node dist/index.cjs serve",
+        "start": "node dist/index.cjs",
         "generate": "./generate_workerd.sh",
-        "package": "rm -rf dist/pkg && pkg ."
+        "package": "rm -rf dist/pkg && pkg . && chmod +x dist/pkg/*"
     },
     "dependencies": {
         "@clerk/clerk-react": "^5.30.0",
