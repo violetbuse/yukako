@@ -1,17 +1,27 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/client/components/ui/dropdown-menu";
 import { Button } from "@/client/components/ui/button";
 import { useTRPC } from "@/client/trpc_client"
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/client/components/ui/dialog";
 import { Input } from "@/client/components/ui/input";
 import { TRPCError } from "@trpc/server";
 import { ChevronDown, Plus } from "lucide-react";
+import Cookies from "js-cookie";
+
+export const WORKER_ID_COOKIE_NAME = "yukako_worker_id";
 
 export const WorkerSwitcher = () => {
 
     const trpc = useTRPC();
+    const queryClient = useQueryClient();
     const workers = useQuery(trpc.workers.list.queryOptions())
+
+    const sorted_workers = useMemo(() => {
+        const sorted_workers = [...(workers.data ?? [])];
+        sorted_workers.sort((a, b) => a.name.localeCompare(b.name));
+        return sorted_workers;
+    }, [workers.data]);
 
     const [selectedWorker, setSelectedWorker] = useState<string | null>(null);
     const { selected_worker_id, selected_worker_name } = useMemo(() => {
@@ -20,7 +30,21 @@ export const WorkerSwitcher = () => {
         return { selected_worker_id, selected_worker_name }
     }, [selectedWorker, workers.data]);
 
-    console.log({ data: workers.data })
+    useEffect(() => {
+        if (!selected_worker_id && sorted_workers.length > 0) {
+            setSelectedWorker(sorted_workers[0].id);
+        }
+    }, [selected_worker_id, sorted_workers])
+
+    useEffect(() => {
+        if (selected_worker_id) {
+            Cookies.set(WORKER_ID_COOKIE_NAME, selected_worker_id);
+        } else {
+            Cookies.remove(WORKER_ID_COOKIE_NAME);
+        }
+
+        queryClient.invalidateQueries();
+    }, [selected_worker_id])
 
     const [isNewWorkerModalOpen, setIsNewWorkerModalOpen] = useState(false);
     const [newWorkerName, setNewWorkerName] = useState("");
@@ -69,13 +93,13 @@ export const WorkerSwitcher = () => {
                 <DropdownMenuTrigger className="hover:bg-foreground/10 px-2 py-0.5 rounded text-sm text-muted-foreground flex items-center gap-2 focus:outline-none">
                     {selected_worker_name || "Select Worker"} <ChevronDown className="w-4 h-4 mt-0.5" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    {workers.data?.map((worker) => (
+                <DropdownMenuContent className="p-0 rounded-sm">
+                    {sorted_workers.map((worker) => (
                         <DropdownMenuItem className="px-6 py-3" key={worker.id} onClick={() => setSelectedWorker(worker.id)}>
                             {worker.name}
                         </DropdownMenuItem>
                     ))}
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator className="my-0 min-w-52" />
                     <DropdownMenuItem className="px-6 py-3" onClick={() => setIsNewWorkerModalOpen(true)}>
                         <Plus className="w-4 h-4" />
                         New Worker

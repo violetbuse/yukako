@@ -6,7 +6,7 @@ import { TRPCProvider } from '@/client/trpc_client';
 import { HomeNavbar } from '@/client/components/navbar';
 import { Route, Switch } from 'wouter';
 import { Home } from '@/client/pages/home';
-import { AdminHome } from '@/client/pages/admin/home';
+import { AdminHome } from '@/client/pages/admin/main';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { useTheme } from '@/client/components/theme-provider';
 import { dark } from '@clerk/themes';

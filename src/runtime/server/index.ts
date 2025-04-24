@@ -3,7 +3,6 @@ import { Config } from "@/runtime/config";
 import http from 'http';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import { resolve } from 'path';
-import { auth_router } from '@/runtime/server/auth';
 import morgan from 'morgan';
 import { Request, Response, NextFunction } from 'express';
 import { appRouter } from '@/api/routers';
