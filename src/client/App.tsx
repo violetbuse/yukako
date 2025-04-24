@@ -57,7 +57,7 @@ function App() {
                     <QueryInvalidator />
                     <Switch>
                         <Route path="/" component={Home} />
-                        {/* <Route path="/admin" component={AdminHome} /> */}
+                        <Route path="/admin" component={AdminHome} />
                         <Route component={NotFound} />
                     </Switch>
                 </TRPCProvider>

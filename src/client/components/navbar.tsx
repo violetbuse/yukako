@@ -4,6 +4,7 @@ import { WorkerSwitcher } from "./worker_switcher";
 import { useTheme } from "@/client/components/theme-provider";
 import { ExternalLink, MoonIcon, SunIcon } from "lucide-react";
 import { Button } from "@/client/components/ui/button";
+import { ThemeButton } from "./theme-button";
 
 export const HomeNavbar = () => {
 
@@ -35,9 +36,7 @@ export const HomeNavbar = () => {
                         </SignedIn>
                     </div>
                     <div className="flex items-center">
-                        <Button variant="outline" className="px-2.5 mr-4 shadow-xs" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-                            {theme === "dark" ? <MoonIcon className="w-4 h-4" /> : <SunIcon className="w-4 h-4" />}
-                        </Button>
+                        <ThemeButton />
                         <SignedOut>
                             <SignInButton mode="modal">
                                 <Button>Sign In</Button>
