@@ -1,12 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import { AppRouter } from '@/api/routers';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { TRPCProvider } from '@/client/trpc_client';
 import { HomeNavbar } from '@/client/components/navbar';
 import { Route, Switch } from 'wouter';
 import { Home } from '@/client/pages/home';
 import { AdminHome } from '@/client/pages/admin/home';
+import { useAuth } from '@clerk/clerk-react';
 
 function makeQueryClient() {
     return new QueryClient({
@@ -38,6 +39,13 @@ function App() {
             })
         ]
     }));
+
+    const { isSignedIn, userId, orgId, orgRole } = useAuth()
+
+    useEffect(() => {
+        // when auth state changes, invalidate all queries
+        queryClient.invalidateQueries()
+    }, [isSignedIn, userId, orgId, orgRole])
 
 
     return (

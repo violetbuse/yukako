@@ -17,7 +17,10 @@ export const createTRPCServerContext = async ({ req, res }: trpcExpress.CreateEx
 
     if (!req.auth?.userId) {
         return {
-            user_id: null
+            user_id: null,
+            organization_id: null,
+            org_role: null,
+            org_slug: null
         }
     }
 
@@ -25,7 +28,10 @@ export const createTRPCServerContext = async ({ req, res }: trpcExpress.CreateEx
 
     if (!auth.userId) {
         return {
-            user_id: null
+            user_id: null,
+            organization_id: null,
+            org_role: null,
+            org_slug: null
         }
     }
 
@@ -33,7 +39,10 @@ export const createTRPCServerContext = async ({ req, res }: trpcExpress.CreateEx
 
     if (!token) {
         return {
-            user_id: null
+            user_id: null,
+            organization_id: null,
+            org_role: null,
+            org_slug: null
         }
     }
 
@@ -41,6 +50,8 @@ export const createTRPCServerContext = async ({ req, res }: trpcExpress.CreateEx
         return {
             user_id: auth.userId,
             organization_id: null,
+            org_role: null,
+            org_slug: null,
             token
         }
     }
@@ -49,6 +60,8 @@ export const createTRPCServerContext = async ({ req, res }: trpcExpress.CreateEx
         return {
             user_id: auth.userId,
             organization_id: null,
+            org_role: null,
+            org_slug: null,
             token
         }
     }
@@ -64,9 +77,14 @@ export const createTRPCServerContext = async ({ req, res }: trpcExpress.CreateEx
 
 type Context = {
     user_id: null
+    organization_id: null
+    org_role: null
+    org_slug: null
 } | (({
     user_id: string
     organization_id: null
+    org_role: null
+    org_slug: null
 } | {
     user_id: string
     organization_id: string
