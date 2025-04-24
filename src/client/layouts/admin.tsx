@@ -1,10 +1,14 @@
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset, SidebarProvider, SidebarTrigger, useSidebar } from "@/client/components/ui/sidebar"
 import { OrganizationSwitcher, RedirectToSignIn, SignedIn, SignedOut, UserButton, useUser } from "@clerk/clerk-react"
-import { WorkerSwitcher } from "@/client/components/worker_switcher"
+import { WorkerSwitcher, useWorkerSelection, NewWorkerButton } from "@/client/components/worker_switcher"
 import { useAuth } from "@clerk/clerk-react";
 import { ThemeButton } from "@/client/components/theme-button";
 
-export const AdminLayout = ({ children }: { children?: React.ReactNode | React.ReactNode[] | undefined | null }) => {
+export const AdminLayout = ({ children }: { children?: React.ReactNode }) => {
+
+    const { selected_worker_id, selected_worker_name } = useWorkerSelection();
+
+
     return (
         <div>
             <SignedOut>
@@ -26,7 +30,18 @@ export const AdminLayout = ({ children }: { children?: React.ReactNode | React.R
                                 <ThemeButton />
                             </div>
                         </header>
-                        {children}
+                        {selected_worker_id && <>
+                            {children}
+                        </>}
+                        {!selected_worker_id && <>
+                            <div className="flex flex-col items-center justify-center h-full">
+                                <div>
+                                    <h1 className="text-3xl font-bold mb-4">Welcome to Yukako!</h1>
+                                    <p className="text-lg text-muted-foreground mb-6">It looks like you haven't selected a worker yet. Let's get started by creating your first worker!</p>
+                                    <NewWorkerButton />
+                                </div>
+                            </div>
+                        </>}
                     </SidebarInset>
                 </SidebarProvider>
             </SignedIn>
@@ -39,13 +54,15 @@ const AdminSidebar = () => {
     const { user } = useUser();
     const { open } = useSidebar();
 
+    const { selected_worker_id, selected_worker_name } = useWorkerSelection();
+
     return (
         <Sidebar variant="inset" collapsible="icon">
             <SidebarHeader>
-
+                <h1 className="text-lg font-semibold">Yukako</h1>
+                <h3 className="text-sm text-muted-foreground truncate">{selected_worker_name || "No worker selected"}</h3>
             </SidebarHeader>
             <SidebarContent>
-
             </SidebarContent>
             <SidebarFooter>
                 <div className="flex items-center gap-2">

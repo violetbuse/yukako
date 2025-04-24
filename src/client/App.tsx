@@ -12,6 +12,7 @@ import { useTheme } from '@/client/components/theme-provider';
 import { dark } from '@clerk/themes';
 import { QueryInvalidator } from '@/client/components/query-invalidator';
 import { NotFound } from '@/client/pages/404';
+import { WorkerProvider } from '@/client/components/worker_switcher';
 
 if (!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY) {
     throw new Error('CLERK_PUBLISHABLE_KEY is not set');
@@ -54,12 +55,14 @@ function App() {
         <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY} appearance={{ baseTheme: theme === "dark" ? dark : undefined }}>
             <QueryClientProvider client={queryClient}>
                 <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
-                    <QueryInvalidator />
-                    <Switch>
-                        <Route path="/" component={Home} />
-                        <Route path="/admin" component={AdminHome} />
-                        <Route component={NotFound} />
-                    </Switch>
+                    <WorkerProvider>
+                        <QueryInvalidator />
+                        <Switch>
+                            <Route path="/" component={Home} />
+                            <Route path="/admin" component={AdminHome} />
+                            <Route component={NotFound} />
+                        </Switch>
+                    </WorkerProvider>
                 </TRPCProvider>
             </QueryClientProvider>
         </ClerkProvider>

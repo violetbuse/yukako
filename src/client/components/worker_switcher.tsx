@@ -2,7 +2,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Button } from "@/client/components/ui/button";
 import { useTRPC } from "@/client/trpc_client"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/client/components/ui/dialog";
 import { Input } from "@/client/components/ui/input";
 import { TRPCError } from "@trpc/server";
@@ -11,8 +11,25 @@ import Cookies from "js-cookie";
 
 export const WORKER_ID_COOKIE_NAME = "yukako_worker_id";
 
-export const WorkerSwitcher = () => {
+type WorkerProviderState = {
+    workers: ({ id: string, name: string })[]
+    selected_worker_id: string | null
+    selected_worker_name: string | null
+    setSelectedWorker: (worker_id: string) => void
+}
 
+const WorkerProviderContext = createContext<WorkerProviderState>({
+    workers: [],
+    selected_worker_id: null,
+    selected_worker_name: null,
+    setSelectedWorker: () => null,
+});
+
+type WorkerProviderProps = {
+    children: React.ReactNode
+}
+
+export const WorkerProvider = ({ children }: WorkerProviderProps) => {
     const trpc = useTRPC();
     const queryClient = useQueryClient();
     const workers = useQuery(trpc.workers.list.queryOptions())
@@ -25,8 +42,8 @@ export const WorkerSwitcher = () => {
 
     const [selectedWorker, setSelectedWorker] = useState<string | null>(null);
     const { selected_worker_id, selected_worker_name } = useMemo(() => {
-        const selected_worker_id = selectedWorker ? workers.data?.find((worker) => worker.id === selectedWorker)?.id : null;
-        const selected_worker_name = selectedWorker ? workers.data?.find((worker) => worker.id === selectedWorker)?.name : null;
+        const selected_worker_id = selectedWorker ? workers.data?.find((worker) => worker.id === selectedWorker)?.id ?? null : null;
+        const selected_worker_name = selectedWorker ? workers.data?.find((worker) => worker.id === selectedWorker)?.name ?? null : null;
         return { selected_worker_id, selected_worker_name }
     }, [selectedWorker, workers.data]);
 
@@ -46,6 +63,24 @@ export const WorkerSwitcher = () => {
         queryClient.invalidateQueries();
     }, [selected_worker_id])
 
+    return (
+        <WorkerProviderContext.Provider value={{ workers: sorted_workers, selected_worker_id, selected_worker_name, setSelectedWorker }}>
+            {children}
+        </WorkerProviderContext.Provider>
+    )
+}
+
+export const useWorkerSelection = () => {
+    const { workers, selected_worker_id, selected_worker_name, setSelectedWorker } = useContext(WorkerProviderContext);
+    return { workers, selected_worker_id, selected_worker_name, setSelectedWorker };
+}
+
+export const WorkerSwitcher = () => {
+
+    const { workers, selected_worker_id, selected_worker_name, setSelectedWorker } = useWorkerSelection();
+    const trpc = useTRPC();
+    const queryClient = useQueryClient();
+
     const [isNewWorkerModalOpen, setIsNewWorkerModalOpen] = useState(false);
     const [newWorkerName, setNewWorkerName] = useState("");
     const [newWorkerError, setNewWorkerError] = useState<string | null>(null);
@@ -57,7 +92,7 @@ export const WorkerSwitcher = () => {
             setNewWorkerName("");
             setNewWorkerError(null);
             setNewWorkerIsLoading(false);
-            workers.refetch();
+            queryClient.invalidateQueries();
         },
     }))
 
@@ -94,9 +129,9 @@ export const WorkerSwitcher = () => {
                     {selected_worker_name || "Select Worker"} <ChevronDown className="w-4 h-4 mt-0.5" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="p-0 rounded-sm min-w-48">
-                    {sorted_workers.map((worker) => (
+                    {workers.map((worker) => (
                         <DropdownMenuItem
-                            className={`px-6 py-3 rounded-none hover:bg-foreground/15 hover:text-foreground ${selectedWorker === worker.id ? 'text-foreground bg-foreground/5' : 'text-muted-foreground'}`}
+                            className={`px-6 py-3 rounded-none hover:bg-foreground/15 hover:text-foreground ${selected_worker_id === worker.id ? 'text-foreground bg-foreground/5' : 'text-muted-foreground'}`}
                             key={worker.id}
                             onClick={() => setSelectedWorker(worker.id)}
                         >
@@ -146,4 +181,53 @@ const NewWorkerDialog = ({ isOpen, onClose, onSubmit, isLoading, error, name, se
             </DialogContent>
         </Dialog>
     )
+}
+
+export const NewWorkerButton = () => {
+
+    const trpc = useTRPC();
+    const queryClient = useQueryClient();
+
+    const new_worker_mutation = useMutation(trpc.workers.new.mutationOptions({
+        onSuccess: () => {
+            queryClient.invalidateQueries();
+        },
+    }))
+
+    const { setSelectedWorker } = useWorkerSelection();
+
+    const [isNewWorkerModalOpen, setIsNewWorkerModalOpen] = useState(false);
+    const [newWorkerName, setNewWorkerName] = useState("");
+    const [newWorkerError, setNewWorkerError] = useState<string | null>(null);
+    const [newWorkerIsLoading, setNewWorkerIsLoading] = useState(false);
+
+    const handleNewWorkerSubmit = async () => {
+        setNewWorkerIsLoading(true);
+        try {
+            const res = await new_worker_mutation.mutateAsync({ name: newWorkerName })
+
+            setSelectedWorker(res);
+        } catch (err) {
+            if (err instanceof TRPCError) {
+                setNewWorkerError(err.message);
+            } else {
+                setNewWorkerError("An unknown error occurred");
+            }
+        } finally {
+            setNewWorkerIsLoading(false);
+        }
+    }
+
+    return <>
+        <Button onClick={() => setIsNewWorkerModalOpen(true)}>New Worker</Button>
+        <NewWorkerDialog
+            isOpen={isNewWorkerModalOpen}
+            onClose={() => setIsNewWorkerModalOpen(false)}
+            onSubmit={handleNewWorkerSubmit}
+            isLoading={newWorkerIsLoading}
+            error={newWorkerError}
+            name={newWorkerName}
+            setName={setNewWorkerName}
+        />
+    </>
 }
