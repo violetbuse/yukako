@@ -81,31 +81,33 @@ export const workers_router = router({
             type: 'javascript'
         }
 
-        const modules = worker.modules.map((module) => {
-            let content = module.es_module || module.cjs_module || module.text_module || module.data_module || module.wasm_module || module.json_module;
-            let type = '';
+        const modules = worker.modules
+            .map((module) => {
+                let content = module.es_module || module.cjs_module || module.text_module || module.data_module || module.wasm_module || module.json_module;
+                let type = '';
 
-            if (module.es_module) {
-                type = 'es_module';
-            } else if (module.cjs_module) {
-                type = 'cjs_module';
-            } else if (module.text_module) {
-                type = 'text_module';
-            } else if (module.data_module) {
-                type = 'data_module';
-            } else if (module.wasm_module) {
-                type = 'wasm_module';
-            } else if (module.json_module) {
-                type = 'json_module';
-            }
+                if (module.es_module) {
+                    type = 'es_module';
+                } else if (module.cjs_module) {
+                    type = 'cjs_module';
+                } else if (module.text_module) {
+                    type = 'text_module';
+                } else if (module.data_module) {
+                    type = 'data_module';
+                } else if (module.wasm_module) {
+                    type = 'wasm_module';
+                } else if (module.json_module) {
+                    type = 'json_module';
+                }
 
-            return {
-                id: module.id,
-                name: module.name,
-                content,
-                type
-            }
-        })
+                return {
+                    id: module.id,
+                    name: module.name,
+                    content,
+                    type
+                }
+            })
+            .filter((module): module is { id: string; name: string; content: string; type: string } => module.content !== null);
 
         return [entrypoint, ...modules]
     })

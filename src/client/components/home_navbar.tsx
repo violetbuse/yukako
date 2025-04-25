@@ -20,10 +20,12 @@ export const HomeNavbar = () => {
                             Yukako
                         </Link>
                         <SignedIn>
-                            <Link href="/admin" className="text-muted-foreground text-sm flex items-center">
-                                Dashboard
-                                <ExternalLink className="w-4 h-4 ml-1" />
-                            </Link>
+                            <div className="ml-4">
+                                <Link href="/admin" className="text-muted-foreground text-sm flex items-center">
+                                    Dashboard
+                                    <ExternalLink className="w-4 h-4 ml-1" />
+                                </Link>
+                            </div>
                         </SignedIn>
                     </div>
                     <div className="flex items-center">

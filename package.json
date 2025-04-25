@@ -16,7 +16,7 @@
         "watch": "npm run watch:server & npm run watch:client",
         "dev:server": "concurrently --raw \"npm run watch:server\" \"nodemon --enable-source-maps dist/index.cjs\"",
         "dev:client": "vite --port 5173",
-        "dev:webhook": "lt --port 3000 --subdomain viowet-yukako",
+        "dev:webhook": "lt --port 8787 --subdomain viowet-yukako",
         "dev": "concurrently --names \"server,client,webhook\" --prefix-colors \"blue,green,red\" \"npm run dev:server\" \"npm run dev:client\" \"npm run dev:webhook\"",
         "start": "node dist/index.cjs",
         "generate": "./generate_workerd.sh",

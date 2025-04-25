@@ -9,6 +9,7 @@ import { appRouter } from '@/api/routers';
 import { createTRPCServerContext } from '@/api/server';
 import cookieParser from 'cookie-parser';
 import { clerkMiddleware } from '@clerk/express';
+import { rmSync } from 'fs';
 
 const directory = __dirname;
 
@@ -65,7 +66,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     });
 });
 
-
 export class RuntimeBackend {
     private config: Config;
     private server: http.Server | null;
@@ -76,8 +76,10 @@ export class RuntimeBackend {
     }
 
     public async start(): Promise<void> {
-        this.server = app.listen(this.config.backend_port, () => {
-            console.log(`Yukako is running at http://localhost:${this.config.backend_port}`);
+        const socket = this.config.backend_socket;
+        rmSync(socket, { force: true });
+        this.server = app.listen(socket, () => {
+            console.log(`Yukako is running at ${socket}`);
         })
     }
 

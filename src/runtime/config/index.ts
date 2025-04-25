@@ -2,9 +2,15 @@ import { Service, Worker_Binding, Config as WorkerdConfig } from "@/generated/wo
 import { builtin_worker_scripts } from "@/workers";
 import { generateConfigBinary } from "@/runtime/config/serialize";
 
+export type RouterConfig = {
+    serve_admin: boolean;
+    admin_hostnames: string[];
+}
+
 export type Config = {
-    backend_port: number;
+    backend_socket: string;
     workerd_port: number;
+    router_config: RouterConfig;
     workers: WorkerConfig[];
 }
 
@@ -56,7 +62,14 @@ export const build_config = async (input: Config): Promise<WorkerdConfig> => {
                     name: "router.js",
                     esModule: builtins.router
                 }],
-                bindings: [...router_worker_bindings, { name: "map", json: JSON.stringify(router_map) }],
+                bindings: [...router_worker_bindings,
+                { name: "map", json: JSON.stringify(router_map) },
+                { name: "backend", service: { name: "runtime_backend" } }, {
+                    name: "config", json: JSON.stringify({
+                        serve_admin: input.router_config.serve_admin,
+                        admin_hostnames: input.router_config.admin_hostnames
+                    })
+                }],
                 compatibilityDate: "2024-03-15"
             }
         }, {
@@ -67,7 +80,7 @@ export const build_config = async (input: Config): Promise<WorkerdConfig> => {
         }, {
             name: "runtime_backend",
             external: {
-                address: `localhost:${input.backend_port}`,
+                address: `unix:${input.backend_socket}`,
                 http: {}
             }
         }, ...worker_services],
