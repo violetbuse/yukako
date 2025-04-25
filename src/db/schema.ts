@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { mysqlTable, text, timestamp, varchar, boolean } from "drizzle-orm/mysql-core";
 import { nanoid } from "nanoid";
 
 export const workers = mysqlTable("workers", {
@@ -39,10 +39,13 @@ export const modules_relations = relations(modules, ({ one }) => ({
 }))
 
 export const hostnames = mysqlTable("hostnames", {
-    hostname: varchar("hostname", { length: 255 }).primaryKey(),
+    id: varchar("id", { length: 21 }).primaryKey().$defaultFn(() => nanoid()),
+    hostname: varchar("hostname", { length: 255 }).notNull(),
     worker_id: text("worker_id").notNull(),
     created_at: timestamp("created_at").notNull().defaultNow(),
     updated_at: timestamp("updated_at").notNull().defaultNow(),
+    verified: boolean("verified").notNull().default(false),
+    verification_code: text("verification_code").notNull(),
 })
 
 export const hostnames_relations = relations(hostnames, ({ one }) => ({

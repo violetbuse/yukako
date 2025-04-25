@@ -1,8 +1,6 @@
 import { db } from "@/db";
 import hash from "object-hash";
 import { WorkerConfig } from "@/runtime/config";
-import { isNotNull } from "drizzle-orm";
-import { workers } from "@/db/schema";
 
 export class Manager {
     private static instance: Manager;
@@ -30,7 +28,9 @@ export class Manager {
         const worker_list = await db.query.workers.findMany({
             with: {
                 modules: true,
-                hostnames: true
+                hostnames: {
+                    where: (hostnames, { eq }) => eq(hostnames.verified, true)
+                }
             }
         });
 

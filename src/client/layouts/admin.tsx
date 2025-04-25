@@ -23,7 +23,7 @@ export const AdminLayout = ({ children }: { children?: React.ReactNode }) => {
             <SignedIn>
                 <SidebarProvider>
                     <AdminSidebar />
-                    <SidebarInset className="p-2">
+                    <SidebarInset className="py-2 px-4">
                         <header className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <SidebarTrigger />
@@ -60,7 +60,7 @@ const AdminSidebar = () => {
     const { user } = useUser();
     const { open } = useSidebar();
 
-    const { selected_worker_name } = useWorkerSelection();
+    const { selected_worker_name, selected_worker_id } = useWorkerSelection();
 
     return (
         <Sidebar variant="inset" collapsible="icon">
@@ -69,7 +69,7 @@ const AdminSidebar = () => {
                 <h3 className="text-sm text-muted-foreground truncate">{selected_worker_name || "No worker selected"}</h3>
             </SidebarHeader>
             <SidebarContent>
-                <SidebarDeveloper />
+                {selected_worker_id && <SidebarDeveloper />}
             </SidebarContent>
             <SidebarFooter>
                 <div className="flex items-center gap-2">
@@ -92,11 +92,8 @@ const SidebarDeveloper = () => {
         localStorage.setItem('code_collapsed', JSON.stringify(code_collapsed));
     }, [code_collapsed]);
 
-
     const trpc = useTRPC()
     const files = useQuery(trpc.workers.get_source.queryOptions());
-
-    console.log(files.status)
 
     const [match_code, code_params] = useRoute("/admin/code/:script_id");
     const [match_hostnames] = useRoute("/admin/hostnames");

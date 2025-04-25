@@ -16,6 +16,7 @@ import { WorkerProvider } from '@/client/components/worker_switcher';
 import { MainLayout } from '@/client/layouts/main';
 import { AdminCodeSource } from '@/client/pages/admin/view_source';
 import { AdminHostnames } from '@/client/pages/admin/hostnames';
+import { Toaster } from '@/client/components/ui/sonner';
 
 if (!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY) {
     throw new Error('CLERK_PUBLISHABLE_KEY is not set');
@@ -60,6 +61,7 @@ function App() {
                 <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
                     <WorkerProvider>
                         <QueryInvalidator />
+                        <Toaster />
                         <Switch>
                             <Route path="/" component={Home} />
                             <Route path="/admin" component={AdminHome} />
