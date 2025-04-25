@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { mysqlTable, text, timestamp, varchar, boolean } from "drizzle-orm/mysql-core";
+import { mysqlTable, text, timestamp, varchar, boolean, int, primaryKey } from "drizzle-orm/mysql-core";
 import { nanoid } from "nanoid";
 
 export const workers = mysqlTable("workers", {
@@ -55,5 +55,22 @@ export const hostnames_relations = relations(hostnames, ({ one }) => ({
     }),
 }))
 
+export const slotted_counters = mysqlTable("slotted_counters", {
+    id: varchar("id", { length: 21 }).$defaultFn(() => nanoid()),
+    record_type: varchar("record_type", { length: 63, enum: ["worker_traffic"] }).notNull(),
+    record_id: varchar("record_id", { length: 63 }).notNull(),
+    record_secondary_id: varchar("record_secondary_id", { length: 63 }),
+    slot: int("slot").notNull(),
+    count: int("count").notNull().default(0),
+    year: int("year").notNull(),
+    month: int("month").notNull(),
+    day: int("day").notNull(),
+    hour: int("hour").notNull(),
+}, table => [
+    primaryKey({
+        name: "slotted_counters_pk",
+        columns: [table.record_type, table.record_id, table.record_secondary_id, table.slot, table.year, table.month, table.day, table.hour]
+    })
+])
 
 

@@ -10,6 +10,7 @@ import { createTRPCServerContext } from '@/api/server';
 import cookieParser from 'cookie-parser';
 import { clerkMiddleware } from '@clerk/express';
 import { rmSync } from 'fs';
+import { yukako_backend_router } from '@/runtime/backend/router';
 
 const directory = __dirname;
 
@@ -28,37 +29,24 @@ app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(morgan('tiny'));
-
-// app.use('/__yukako*', (req, res, next) => {
-//     const local_auth_secret = process.env.LOCAL_AUTH_TOKEN;
-//     if (!local_auth_secret) {
-//         res.status(500).json({ error: 'LOCAL_AUTH_TOKEN is not set' });
-//         return;
-//     }
-
-//     const local_auth_token = req.headers['authorization'];
-//     if (local_auth_token !== local_auth_secret) {
-//         res.status(401).json({ error: 'Unauthorized' });
-//         return;
-//     }
-//     next();
-// });
+app.use(morgan(':method :url :status - :response-time ms'));
 
 app.use('/api/trpc', trpcExpress.createExpressMiddleware({
     router: appRouter,
     createContext: createTRPCServerContext
 }));
 
+app.use('/__yukako', yukako_backend_router);
+
 app.use(express.static(client_files, {
     dotfiles: 'ignore',
     index: "index.html",
     redirect: true,
     extensions: ['html', 'htm'],
-    fallthrough: false,
+    fallthrough: true,
 }));
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
     res.sendFile(resolve(client_files, 'index.html'), (err) => {
         if (err) {
             next(err);

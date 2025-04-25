@@ -24,16 +24,6 @@ export default {
             return new Response("No hostname", { status: 400 });
         }
 
-        if (env.config.serve_admin) {
-            if (hostname === "localhost" || hostname.startsWith("yukako.")) {
-                if (!url.pathname.startsWith("/__yukako/")) {
-                    return env.backend.fetch(request);
-                } else {
-                    return new Response("Not found", { status: 404 });
-                }
-            }
-        }
-
         const serve_backend_admin_ui = env.config.serve_admin;
         const hostname_matches_admin = env.config.admin_hostnames.includes(hostname);
 
@@ -53,6 +43,27 @@ export default {
             return new Response("No service", { status: 404 });
         }
 
-        return service.fetch(request);
+        const response = await service.fetch(request);
+
+        try {
+            const data = {
+                status: response.status,
+                track_traffic: env.config.track_traffic,
+            }
+
+            console.log(data);
+
+            await env.backend.fetch(new Request("http://localhost:3000/__yukako/traffic/" + worker_id, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            }));
+        } catch (error) {
+            console.error(error);
+        }
+
+        return response;
     }
 }

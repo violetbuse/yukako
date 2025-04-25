@@ -5,6 +5,7 @@ import { generateConfigBinary } from "@/runtime/config/serialize";
 export type RouterConfig = {
     serve_admin: boolean;
     admin_hostnames: string[];
+    track_traffic: boolean;
 }
 
 export type Config = {
@@ -65,10 +66,7 @@ export const build_config = async (input: Config): Promise<WorkerdConfig> => {
                 bindings: [...router_worker_bindings,
                 { name: "map", json: JSON.stringify(router_map) },
                 { name: "backend", service: { name: "runtime_backend" } }, {
-                    name: "config", json: JSON.stringify({
-                        serve_admin: input.router_config.serve_admin,
-                        admin_hostnames: input.router_config.admin_hostnames
-                    })
+                    name: "config", json: JSON.stringify(input.router_config)
                 }],
                 compatibilityDate: "2024-03-15"
             }
