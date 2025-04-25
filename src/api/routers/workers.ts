@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server"
 import { eq, not, and } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { z } from "zod"
+import { hostnames_router } from "@/api/routers/hostnames"
 
 const default_worker_script = `
 export default {
@@ -16,11 +17,8 @@ export default {
 }
 `
 
-const generate_verification_entry = (hostname: string) => {
-    return `yukako-verification.${hostname}`
-}
-
 export const workers_router = router({
+    hostnames: hostnames_router,
     list: public_procedure.query(async ({ ctx }) => {
         if (!ctx.user_id) {
             throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to view this page" })
@@ -115,124 +113,5 @@ export const workers_router = router({
             .filter((module): module is { id: string; name: string; content: string; type: string } => module.content !== null);
 
         return [entrypoint, ...modules]
-    }),
-    get_hostnames: public_procedure.query(async ({ ctx }) => {
-        if (!ctx.user_id) {
-            throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to view this page" })
-        }
-
-        if (!ctx.worker_id) {
-            throw new TRPCError({ code: "BAD_REQUEST", message: "Worker ID is required" })
-        }
-
-        const hostnames_list = await db.query.hostnames.findMany({
-            where: eq(hostnames.worker_id, ctx.worker_id)
-        })
-
-        return hostnames_list.map((hostname) => ({
-            id: hostname.id,
-            hostname: hostname.hostname,
-            worker_id: hostname.worker_id,
-            verified: hostname.verified,
-            verification_code: hostname.verification_code,
-            verification_entry: generate_verification_entry(hostname.hostname)
-        }))
-    }),
-    create_hostname: public_procedure.input(z.object({
-        hostname: z.string(),
-    })).mutation(async ({ ctx, input }) => {
-        if (!ctx.user_id) {
-            throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to view this page" })
-        }
-
-        if (!ctx.worker_id) {
-            throw new TRPCError({ code: "BAD_REQUEST", message: "Worker ID is required" })
-        }
-
-        const hostname_id = nanoid()
-
-        const verification_code = nanoid()
-
-        // hostnames ending in .localhost are verified by default
-        const auto_verified = input.hostname.endsWith(".localhost")
-
-        const new_hostname = await db.insert(hostnames).values({
-            id: hostname_id,
-            hostname: input.hostname,
-            worker_id: ctx.worker_id,
-            verification_code,
-            verified: auto_verified
-        })
-
-        return new_hostname
-    }),
-    attempt_verify_hostname: public_procedure.input(z.object({
-        hostname_id: z.string(),
-    })).mutation(async ({ ctx, input }) => {
-        if (!ctx.user_id) {
-            throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to view this page" })
-        }
-
-        if (!ctx.worker_id) {
-            throw new TRPCError({ code: "BAD_REQUEST", message: "Worker ID is required" })
-        }
-
-        const hostname = await db.query.hostnames.findFirst({
-            where: eq(hostnames.id, input.hostname_id)
-        })
-
-        if (!hostname) {
-            throw new TRPCError({ code: "NOT_FOUND", message: "Hostname not found" })
-        }
-
-        if (hostname.worker_id !== ctx.worker_id) {
-            throw new TRPCError({ code: "BAD_REQUEST", message: "Hostname does not belong to this worker" })
-        }
-
-        if (hostname.verified) {
-            return {
-                verified: true
-            }
-        }
-
-        const verification_entry = generate_verification_entry(hostname.hostname)
-
-        const dns_client = new Dns2({
-            nameServers: ["1.1.1.1", "1.0.0.1", "8.8.8.8", "8.8.4.4"]
-        })
-
-        const resolved_entry = await dns_client.query(verification_entry, "TXT")
-
-        console.log(JSON.stringify({
-            verification_entry,
-            resolved_entry
-        }, null, 2))
-
-        const answers_matching_entry = resolved_entry.answers.filter((answer) => answer.name === verification_entry)
-        const answers_matching_code = answers_matching_entry.filter((answer) => answer.data?.trim() === hostname.verification_code)
-
-        const is_verified = answers_matching_code.length > 0
-        const no_answers_matching_entry = answers_matching_entry.length === 0
-
-        if (is_verified) {
-            await db.transaction(async (tx) => {
-                // set all other hostnames with the same hostname to not verified
-                await tx.update(hostnames).set({ verified: false }).where(
-                    and(
-                        not(eq(hostnames.id, input.hostname_id)),
-                        eq(hostnames.hostname, hostname.hostname)
-                    )
-                )
-                // set the hostname to verified
-                await tx.update(hostnames).set({ verified: true }).where(eq(hostnames.id, input.hostname_id))
-            })
-        } else if (no_answers_matching_entry) {
-            // if there are no answers matching the entry, we un-verify all hostnames with the same hostname
-            await db.update(hostnames).set({ verified: false }).where(eq(hostnames.hostname, hostname.hostname))
-        }
-
-        return {
-            verified: is_verified
-        }
     }),
 })

@@ -12,12 +12,12 @@ import { toast } from "sonner"
 export const AdminHostnames = () => {
 
     const trpc = useTRPC()
-    const { data, isLoading, error, refetch } = useQuery(trpc.workers.get_hostnames.queryOptions())
+    const { data, isLoading, error, refetch } = useQuery(trpc.workers.hostnames.list.queryOptions())
 
-    const verify_mutation = useMutation(trpc.workers.attempt_verify_hostname.mutationOptions({
+    const verify_mutation = useMutation(trpc.workers.hostnames.attempt_verify_hostname.mutationOptions({
         onSuccess: (data) => {
             refetch()
-            if (data.verified) {
+            if (data) {
                 toast.success("Hostname verified successfully")
             } else {
                 toast.error("Hostname verification failed, please check your DNS records or try again later.")
@@ -66,8 +66,8 @@ export const CreateHostnameDialog = () => {
     const [isOpen, setIsOpen] = useState(false)
 
     const trpc = useTRPC()
-    const { refetch } = useQuery(trpc.workers.get_hostnames.queryOptions())
-    const mutate = useMutation(trpc.workers.create_hostname.mutationOptions({
+    const { refetch } = useQuery(trpc.workers.hostnames.list.queryOptions())
+    const mutate = useMutation(trpc.workers.hostnames.new.mutationOptions({
         onSuccess: () => {
             refetch()
             toast.success("Hostname created successfully")

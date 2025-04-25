@@ -14,7 +14,7 @@
     "components": "@/client/components",
     "utils": "@/client/lib/utils",
     "ui": "@/client/components/ui",
-    "lib": "@/lib",
+    "lib": "@/client/lib",
     "hooks": "@/client/hooks"
   },
   "iconLibrary": "lucide"
