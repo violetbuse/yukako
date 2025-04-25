@@ -51,8 +51,6 @@ export default {
                 track_traffic: env.config.track_traffic,
             }
 
-            console.log(data);
-
             await env.backend.fetch(new Request("http://localhost:3000/__yukako/traffic/" + worker_id, {
                 method: "POST",
                 headers: {
