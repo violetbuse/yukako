@@ -197,8 +197,9 @@ export const workers_router = router({
 
         const verification_entry = generate_verification_entry(hostname.hostname)
 
-        const dns_client = new Dns2()
-
+        const dns_client = new Dns2({
+            nameServers: ["1.1.1.1", "1.0.0.1", "8.8.8.8", "8.8.4.4"]
+        })
 
         const resolved_entry = await dns_client.query(verification_entry, "TXT")
 
