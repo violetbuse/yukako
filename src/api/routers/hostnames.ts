@@ -49,6 +49,16 @@ export const hostnames_router = router({
         // hostnames ending in .localhost are verified by default
         const auto_verified = input.hostname.endsWith(".localhost")
 
+        if (auto_verified) {
+            const existing_with_same_hostname = await db.query.hostnames.findFirst({
+                where: eq(hostnames.hostname, input.hostname)
+            })
+
+            if (existing_with_same_hostname) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "Hostname already exists" })
+            }
+        }
+
         const new_hostname = await db.insert(hostnames).values({
             id: hostname_id,
             hostname: input.hostname,
