@@ -20,8 +20,6 @@ const generate_verification_entry = (hostname: string) => {
     return `yukako-verification.${hostname}`
 }
 
-const dns_client = new Dns2();
-
 export const workers_router = router({
     list: public_procedure.query(async ({ ctx }) => {
         if (!ctx.user_id) {
@@ -199,6 +197,9 @@ export const workers_router = router({
 
         const verification_entry = generate_verification_entry(hostname.hostname)
 
+        const dns_client = new Dns2()
+
+
         const resolved_entry = await dns_client.query(verification_entry, "TXT")
 
         console.log(JSON.stringify({
@@ -206,7 +207,11 @@ export const workers_router = router({
             resolved_entry
         }, null, 2))
 
-        const is_verified = resolved_entry.answers.some((answer) => answer.data?.trim() === hostname.verification_code)
+        const answers_matching_entry = resolved_entry.answers.filter((answer) => answer.name === verification_entry)
+        const answers_matching_code = answers_matching_entry.filter((answer) => answer.data?.trim() === hostname.verification_code)
+
+        const is_verified = answers_matching_code.length > 0
+        const no_answers_matching_entry = answers_matching_entry.length === 0
 
         if (is_verified) {
             await db.transaction(async (tx) => {
@@ -220,6 +225,9 @@ export const workers_router = router({
                 // set the hostname to verified
                 await tx.update(hostnames).set({ verified: true }).where(eq(hostnames.id, input.hostname_id))
             })
+        } else if (no_answers_matching_entry) {
+            // if there are no answers matching the entry, we un-verify all hostnames with the same hostname
+            await db.update(hostnames).set({ verified: false }).where(eq(hostnames.hostname, hostname.hostname))
         }
 
         return {
