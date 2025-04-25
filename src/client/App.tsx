@@ -14,7 +14,8 @@ import { QueryInvalidator } from '@/client/components/query-invalidator';
 import { NotFound } from '@/client/pages/404';
 import { WorkerProvider } from '@/client/components/worker_switcher';
 import { MainLayout } from '@/client/layouts/main';
-import { AdminCodeSource } from '@/client/pages/admin/code/source';
+import { AdminCodeSource } from '@/client/pages/admin/view_source';
+import { AdminHostnames } from '@/client/pages/admin/hostnames';
 
 if (!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY) {
     throw new Error('CLERK_PUBLISHABLE_KEY is not set');
@@ -63,6 +64,7 @@ function App() {
                             <Route path="/" component={Home} />
                             <Route path="/admin" component={AdminHome} />
                             <Route path="/admin/code/:script_id" component={AdminCodeSource} />
+                            <Route path="/admin/hostnames" component={AdminHostnames} />
                             <Route component={NotFound} />
                         </Switch>
                     </WorkerProvider>

@@ -7,7 +7,9 @@ import { ChevronRight, Code } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/client/components/ui/collapsible";
 import { useTRPC } from "@/client/trpc_client";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useRoute } from "wouter";
+import { useEffect, useState } from "react";
+import { Link as LinkIcon } from "lucide-react";
 
 export const AdminLayout = ({ children }: { children?: React.ReactNode }) => {
 
@@ -67,7 +69,7 @@ const AdminSidebar = () => {
                 <h3 className="text-sm text-muted-foreground truncate">{selected_worker_name || "No worker selected"}</h3>
             </SidebarHeader>
             <SidebarContent>
-                <SidebarFiles />
+                <SidebarDeveloper />
             </SidebarContent>
             <SidebarFooter>
                 <div className="flex items-center gap-2">
@@ -79,19 +81,34 @@ const AdminSidebar = () => {
     )
 }
 
-const SidebarFiles = () => {
+const SidebarDeveloper = () => {
+
+    const [code_collapsed, setCodeCollapsed] = useState(() => {
+        const savedState = localStorage.getItem('code_collapsed');
+        return savedState ? JSON.parse(savedState) : false;
+    });
+
+    useEffect(() => {
+        localStorage.setItem('code_collapsed', JSON.stringify(code_collapsed));
+    }, [code_collapsed]);
+
 
     const trpc = useTRPC()
     const files = useQuery(trpc.workers.get_source.queryOptions());
+
+    console.log(files.status)
+
+    const [match_code, code_params] = useRoute("/admin/code/:script_id");
+    const [match_hostnames] = useRoute("/admin/hostnames");
 
     return (
         <SidebarGroup>
             <SidebarGroupLabel>Developers</SidebarGroupLabel>
             <SidebarMenu>
-                <Collapsible asChild defaultOpen className="group/collapsible">
+                <Collapsible asChild open={!code_collapsed} onOpenChange={() => setCodeCollapsed(!code_collapsed)} className="group/collapsible">
                     <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
-                            <SidebarMenuButton tooltip="Worker Source Code">
+                            <SidebarMenuButton isActive={match_code && code_collapsed} tooltip="Worker Source Code">
                                 <Code />
                                 <span className="ml-2 truncate">Source Code</span>
                                 <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -99,9 +116,9 @@ const SidebarFiles = () => {
                         </CollapsibleTrigger>
                         <CollapsibleContent>
                             <SidebarMenuSub>
-                                {files.data?.map((file) => (
+                                {files.status === "success" && files.data?.map((file) => (
                                     <SidebarMenuSubItem key={file.id}>
-                                        <SidebarMenuSubButton asChild>
+                                        <SidebarMenuSubButton isActive={match_code && code_params?.script_id === file.id} asChild>
                                             <Link href={`/admin/code/${file.id}`}>
                                                 <span className="truncate">{file.name}</span>
                                             </Link>
@@ -112,6 +129,14 @@ const SidebarFiles = () => {
                         </CollapsibleContent>
                     </SidebarMenuItem>
                 </Collapsible>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild tooltip="Domains & Hostnames" isActive={match_hostnames}>
+                        <Link href="/admin/hostnames">
+                            <LinkIcon className="w-4 h-4 mr-2" />
+                            <span className="truncate">Domains &amp; Hostnames</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
             </SidebarMenu>
         </SidebarGroup>
     )
