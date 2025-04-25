@@ -1,5 +1,5 @@
 import { Button } from "@/client/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/client/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/client/components/ui/dialog"
 import { AdminLayout } from "@/client/layouts/admin"
 import { useTRPC } from "@/client/trpc_client"
 import { useMutation, useQuery } from "@tanstack/react-query"
@@ -25,13 +25,23 @@ export const AdminHostnames = () => {
         }
     }))
 
+    const delete_mutation = useMutation(trpc.workers.hostnames.delete.mutationOptions({
+        onSuccess: () => {
+            refetch()
+            toast.success("Hostname deleted successfully")
+        }
+    }))
+
     return (
         <AdminLayout>
             <h1 className="text-xl font-bold">Domains & Hostnames</h1>
             <div className="flex flex-col gap-2 mt-2">
                 {data?.map((hostname) => (
                     <div key={hostname.hostname} className="flex flex-col gap-2 bg-accent p-4 rounded-md">
-                        <p>{hostname.hostname}</p>
+                        <div className="flex items-center justify-between gap-2">
+                            <p>{hostname.hostname}</p>
+                            <DeleteHostnameDialog hostname_id={hostname.id} />
+                        </div>
                         <p className="flex items-center gap-2">
                             {!hostname.verified && <>
                                 <X className="w-4 h-4 text-red-500" />
@@ -121,4 +131,40 @@ export const CreateHostnameDialog = () => {
             </DialogContent>
         </Dialog>
     )
-}       
+}
+
+export const DeleteHostnameDialog = ({ hostname_id }: { hostname_id: string }) => {
+    const [isOpen, setIsOpen] = useState(false)
+
+    const trpc = useTRPC()
+    const { refetch } = useQuery(trpc.workers.hostnames.list.queryOptions())
+    const delete_mutation = useMutation(trpc.workers.hostnames.delete.mutationOptions({
+        onSuccess: () => {
+            refetch()
+            toast.success("Hostname deleted successfully")
+            setIsOpen(false)
+        }
+    }))
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <Button className="w-fit py-1 px-2" variant="destructive">Delete</Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Delete Hostname</DialogTitle>
+                </DialogHeader>
+                <DialogDescription>
+                    Are you sure you want to delete this hostname? This action cannot be undone.
+                </DialogDescription>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+                    <Button variant="destructive" onClick={() => delete_mutation.mutate({
+                        hostname_id: hostname_id
+                    })}>Delete</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
+}

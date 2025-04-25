@@ -69,6 +69,29 @@ export const hostnames_router = router({
 
         return new_hostname
     }),
+    delete: public_procedure.input(z.object({
+        hostname_id: z.string(),
+    })).mutation(async ({ ctx, input }) => {
+        if (!ctx.user_id) {
+            throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to view this page" })
+        }
+
+        const hostname = await db.query.hostnames.findFirst({
+            where: eq(hostnames.id, input.hostname_id)
+        })
+
+        if (!hostname) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Hostname not found" })
+        }
+
+        if (hostname.worker_id !== ctx.worker_id) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Hostname does not belong to this worker" })
+        }
+
+        await db.delete(hostnames).where(eq(hostnames.id, input.hostname_id))
+
+        return true
+    }),
     attempt_verify_hostname: public_procedure.input(z.object({
         hostname_id: z.string(),
     })).mutation(async ({ ctx, input }) => {
