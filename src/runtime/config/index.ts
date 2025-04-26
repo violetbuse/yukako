@@ -2,15 +2,10 @@ import { Service, Worker_Binding, Config as WorkerdConfig } from "@/generated/wo
 import { builtin_worker_scripts } from "@/workers";
 import { generateConfigBinary } from "@/runtime/config/serialize";
 
-export type RouterConfig = {
-    serve_admin: boolean;
-    admin_hostnames: string[];
-    track_traffic: boolean;
-}
-
 export type Config = {
+    port: number;
     backend_socket: string;
-    workerd_port: number;
+    workerd_socket: string;
     router_config: RouterConfig;
     poll_interval: number;
     workers: WorkerConfig[];
@@ -21,6 +16,12 @@ export type WorkerConfig = {
     main_script: string;
     compatibility_date: string;
     hostnames: string[];
+}
+
+export type RouterConfig = {
+    serve_admin: boolean;
+    admin_hostnames: string[];
+    track_traffic: boolean;
 }
 
 export const build_config = async (input: Config): Promise<WorkerdConfig> => {
@@ -85,7 +86,7 @@ export const build_config = async (input: Config): Promise<WorkerdConfig> => {
         }, ...worker_services],
         sockets: [{
             name: "http",
-            address: `*:${input.workerd_port}`,
+            address: `unix:${input.workerd_socket}`,
             http: {},
             service: { name: "router" }
         }],

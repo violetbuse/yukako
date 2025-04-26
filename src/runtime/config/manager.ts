@@ -14,14 +14,14 @@ export class ConfigManager {
 
     public static getInstance(): ConfigManager {
         if (!ConfigManager.instance) {
-            const workerd_port = parseInt(process.env.WORKERD_PORT || "8787");
             const backend_socket = join(tmpdir(), `yukako_backend_${nanoid()}.sock`);
-
+            const workerd_socket = join(tmpdir(), `yukako_workerd_${nanoid()}.sock`);
             const poll_interval = parseInt(process.env.POLL_INTERVAL || "10000");
 
             const config = {
-                workerd_port,
+                port: 8787,
                 backend_socket,
+                workerd_socket,
                 poll_interval,
                 router_config: {
                     serve_admin: true,

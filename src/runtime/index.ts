@@ -3,6 +3,7 @@ import { ConfigManager } from "@/runtime/config/manager";
 import { Manager } from "@/runtime/manager";
 import { YukakoBackendServer } from "@/runtime/server";
 import { WorkerdInstance } from "@/runtime/workerd/workerd_instance";
+import { Proxy } from "@/runtime/proxy";
 
 export class Runtime {
 
@@ -26,11 +27,13 @@ export class Runtime {
 
     public async start() {
         Manager.getInstance().start();
+        Proxy.getInstance().start();
     }
 
     public async stop() {
         await WorkerdInstance.getInstance().dispose();
         await YukakoBackendServer.getInstance().stop();
         Manager.getInstance().stop();
+        Proxy.getInstance().stop();
     }
 }

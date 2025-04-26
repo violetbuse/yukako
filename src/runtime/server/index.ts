@@ -12,6 +12,7 @@ import { clerkMiddleware } from '@clerk/express';
 import { rmSync } from 'fs';
 import { yukako_backend_router } from '@/runtime/backend/router';
 import { ConfigManager } from '@/runtime/config/manager';
+import * as body_parser from 'body-parser';
 
 const directory = __dirname;
 
@@ -28,7 +29,8 @@ app.use(clerkMiddleware({
 
 app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 
-app.use(express.json());
+app.use(body_parser.json());
+app.use(body_parser.text());
 app.use(cookieParser());
 app.use(morgan(':method :url :status - :response-time ms'));
 
@@ -76,7 +78,7 @@ export class YukakoBackendServer {
         rmSync(config.backend_socket, { force: true });
 
         this.server = app.listen(config.backend_socket, () => {
-            console.log(`Yukako is running at ${config.backend_socket}`);
+            // console.log(`Yukako is running at ${config.backend_socket}`);
         });
     }
 

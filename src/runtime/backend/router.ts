@@ -5,10 +5,10 @@ import { sql } from "drizzle-orm";
 const router = Router();
 
 router.post("/traffic/:worker_id", async (req, res) => {
-    const data = req.body;
+    const status = parseInt(req.body);
 
-    const status = data.status;
-    const track_traffic = data.track_traffic;
+    const worker_id = req.params.worker_id;
+    console.log(`[${worker_id}] ${status}`);
 
     res.status(200).send('').end();
 })

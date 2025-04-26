@@ -6,6 +6,7 @@ import { Readable } from 'node:stream';
 import fs from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { ConfigManager } from '@/runtime/config/manager';
+import http from 'node:http';
 
 export const getWorkerdBinary = (): string => {
     const platform = process.platform === 'win32' ? 'windows' : process.platform;
@@ -40,21 +41,45 @@ const wait_for_exit = (child: ChildProcess): Promise<void> => {
     });
 }
 
-const wait_for_startup = async (port: number, timeout: number = 1000): Promise<void> => {
+const wait_for_startup = async (socket_path: string, timeout: number = 1000): Promise<void> => {
     // wait for the server to start, polling every 100ms
     const start_time = Date.now();
-    while (Date.now() - start_time < timeout) {
+    while (true) {
         try {
-            const response = await fetch(`http://localhost:${port}/__yukako/router-startup-check`);
-            if (response.ok) {
-                return;
+            const options: http.RequestOptions = {
+                socketPath: socket_path,
+                path: "/__yukako/router-startup-check",
+                hostname: "localhost",
+                method: "GET"
             }
+
+            const request = new Promise<void>((resolve, reject) => {
+                const req = http.request(options, res => {
+                    if (res.statusCode && (res.statusCode < 200 || res.statusCode >= 300)) {
+                        reject(new Error("Workerd failed to start"));
+                    }
+
+                    if (res.statusCode === 200) {
+                        resolve();
+                    }
+                })
+
+                req.on("error", (error) => {
+                    reject(error);
+                })
+
+                req.end();
+            })
+
+            await request;
+            return;
         } catch (error) {
+            if (Date.now() - start_time > timeout) {
+                throw new Error("Workerd failed to start");
+            }
             await new Promise(resolve => setTimeout(resolve, 100));
         }
     }
-
-    throw new Error("Workerd failed to start");
 }
 
 const handle_output = (stdout: Readable, stderr: Readable) => {
@@ -158,9 +183,9 @@ export class WorkerdInstance {
             await once(child_process.stdin, "finish");
         }
 
-        await wait_for_startup(config.workerd_port);
+        await wait_for_startup(config.workerd_socket);
         // console.log("started workerd instance with config", JSON.stringify(workerd_config, null, 2));
-        console.log("started workerd instance");
+        // console.log("started workerd instance");
     }
 
     public async dispose(): Promise<void> {
