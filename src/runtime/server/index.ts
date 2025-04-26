@@ -18,8 +18,6 @@ const directory = __dirname;
 
 const client_files = resolve(directory, "client")
 
-console.log(client_files);
-
 const app = express();
 
 app.use(clerkMiddleware({
