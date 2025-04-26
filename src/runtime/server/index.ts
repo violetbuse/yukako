@@ -8,11 +8,12 @@ import { Request, Response, NextFunction } from 'express';
 import { appRouter } from '@/api/routers';
 import { createTRPCServerContext } from '@/api/server';
 import cookieParser from 'cookie-parser';
-import { clerkMiddleware } from '@clerk/express';
+import { clerkMiddleware, getAuth } from '@clerk/express';
 import { rmSync } from 'fs';
 import { yukako_backend_router } from '@/runtime/backend/router';
 import { ConfigManager } from '@/runtime/config/manager';
 import * as body_parser from 'body-parser';
+import { CLERK_SECRET_KEY, clerk_client, CLERK_PUBLIC_KEY } from '@/auth/clerk';
 
 const directory = __dirname;
 
@@ -21,8 +22,8 @@ const client_files = resolve(directory, "client")
 const app = express();
 
 app.use(clerkMiddleware({
-    publishableKey: process.env.VITE_CLERK_PUBLISHABLE_KEY,
-    secretKey: process.env.CLERK_SECRET_KEY,
+    publishableKey: CLERK_PUBLIC_KEY,
+    secretKey: CLERK_SECRET_KEY,
 }));
 
 app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
@@ -36,6 +37,33 @@ app.use('/api/trpc', trpcExpress.createExpressMiddleware({
     router: appRouter,
     createContext: createTRPCServerContext
 }));
+
+app.get("/api/cli/me", async (req, res) => {
+    const { orgId, userId } = getAuth(req);
+
+    if (!userId) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+    }
+
+    const user = await clerk_client.users.getUser(userId);
+    const org = orgId ? await clerk_client.organizations.getOrganization({ organizationId: orgId }) : null;
+
+    res.json({
+        user: {
+            id: user.id,
+            email: user.primaryEmailAddress?.emailAddress ?? null,
+            firstName: user.firstName ?? null,
+            lastName: user.lastName ?? null,
+            username: user.username ?? null,
+        },
+        org: org ? {
+            id: org.id,
+            name: org.name,
+            slug: org.slug,
+        } : null
+    })
+})
 
 app.use('/__yukako', yukako_backend_router);
 

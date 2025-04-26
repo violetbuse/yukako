@@ -50,5 +50,3 @@ export const hostnames_relations = relations(hostnames, ({ one }) => ({
         references: [workers.id],
     }),
 }))
-
-

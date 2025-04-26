@@ -17,6 +17,7 @@ import { MainLayout } from '@/client/layouts/main';
 import { AdminCodeSource } from '@/client/pages/admin/view_source';
 import { AdminHostnames } from '@/client/pages/admin/hostnames';
 import { Toaster } from '@/client/components/ui/sonner';
+import { AuthenticateCliPage } from '@/client/pages/cli_auth';
 
 if (!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY) {
     throw new Error('CLERK_PUBLISHABLE_KEY is not set');
@@ -64,6 +65,7 @@ function App() {
                         <Toaster />
                         <Switch>
                             <Route path="/" component={Home} />
+                            <Route path="/auth/cli" component={AuthenticateCliPage} />
                             <Route path="/admin" component={AdminHome} />
                             <Route path="/admin/code/:script_id" component={AdminCodeSource} />
                             <Route path="/admin/hostnames" component={AdminHostnames} />

@@ -75,7 +75,7 @@ const devCommand = new Command('dev')
                         main_script: main_script.text,
                         compatibility_date: config.compatibility_date,
                         hostnames: ["localhost"],
-                        modules: other_scripts.map((file) => ({ name: file.path, type: 'esm', value: file.text })),
+                        modules: other_scripts.map((file) => ({ name: file.path.replace(build_dir, ''), type: 'esm', value: file.text })),
                     }
 
                     Runtime.getInstance().update_workers([worker_config]);
