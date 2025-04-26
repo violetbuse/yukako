@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import { ConfigManager } from '@/runtime/config/manager';
 import http from 'node:http';
+import { rm } from 'node:fs/promises';
 
 export const getWorkerdBinary = (): string => {
     const platform = process.platform === 'win32' ? 'windows' : process.platform;
@@ -35,7 +36,7 @@ export const getWorkerdBinary = (): string => {
 const wait_for_exit = (child: ChildProcess): Promise<void> => {
     return new Promise((resolve) => {
         child.once('exit', () => {
-            console.log("Child process exited");
+            // console.log("Child process exited");
             resolve();
         });
     });
@@ -84,10 +85,10 @@ const wait_for_startup = async (socket_path: string, timeout: number = 1000): Pr
 
 const handle_output = (stdout: Readable, stderr: Readable) => {
     stdout.on("data", (data) => {
-        console.log(data.toString());
+        console.log(`[workerd][stdout] ${data.toString()}`);
     })
     stderr.on("data", (data) => {
-        console.error(data.toString());
+        console.error(`[workerd][stderr] ${data.toString()}`);
     })
 }
 
@@ -168,6 +169,10 @@ export class WorkerdInstance {
 
         await this.dispose();
 
+        if (fs.existsSync(config.workerd_socket)) {
+            await rm(config.workerd_socket, { force: true });
+        }
+
         const child_process = spawn(this.binary_path, ['serve', '--binary', '-'], {
             stdio: ['pipe', 'pipe', 'pipe', 'pipe'],
             env: { ...process.env }
@@ -190,7 +195,7 @@ export class WorkerdInstance {
 
     public async dispose(): Promise<void> {
         if (this.child) {
-            console.log("Sending SIGTERM to child process...");
+            // console.log("Sending SIGTERM to child process...");
             this.child.kill("SIGTERM");
 
             // Wait for a short time to see if SIGTERM works
@@ -205,7 +210,7 @@ export class WorkerdInstance {
 
             // If process is still running, force kill it
             if (this.child.exitCode === null) {
-                console.log("Process still running, sending SIGKILL...");
+                console.log("SIGTERM timed out, process still running. Sending SIGKILL...");
                 this.child.kill("SIGKILL");
                 await this.exit_promise;
             }

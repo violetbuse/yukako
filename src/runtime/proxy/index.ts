@@ -35,7 +35,7 @@ export class Proxy {
         });
 
         this.server = http.createServer((req, res) => {
-            proxy.web(req, res);
+            proxy.web(req, res, { ws: true });
         });
 
         this.server.listen(config.port, () => {

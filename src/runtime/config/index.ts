@@ -1,4 +1,4 @@
-import { Service, Worker_Binding, Config as WorkerdConfig } from "@/generated/workerd_types";
+import { Service, Worker_Binding, Config as WorkerdConfig, Worker_Module } from "@/generated/workerd_types";
 import { builtin_worker_scripts } from "@/workers";
 import { generateConfigBinary } from "@/runtime/config/serialize";
 
@@ -16,6 +16,13 @@ export type WorkerConfig = {
     main_script: string;
     compatibility_date: string;
     hostnames: string[];
+    modules: WorkerConfigModule[];
+}
+
+export type WorkerConfigModule = {
+    name: string;
+    type: "esm";
+    value: string;
 }
 
 export type RouterConfig = {
@@ -28,6 +35,12 @@ export const build_config = async (input: Config): Promise<WorkerdConfig> => {
     const builtins = await builtin_worker_scripts();
 
     const worker_services = input.workers.map((worker): Service => {
+
+        const aux_modules = worker.modules.map((module): Worker_Module => ({
+            name: module.name,
+            esModule: module.value
+        }))
+
         return {
             name: worker.id,
             worker: {
@@ -37,7 +50,7 @@ export const build_config = async (input: Config): Promise<WorkerdConfig> => {
                 }, {
                     name: "script",
                     esModule: worker.main_script
-                }],
+                }, ...aux_modules],
                 bindings: [],
                 compatibilityDate: worker.compatibility_date
             }

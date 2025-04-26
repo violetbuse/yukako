@@ -13,8 +13,9 @@ import os from 'os';
 const clustering_enabled = process.env.CLUSTERING_ENABLED === "true" || process.env.CLUSTERING_ENABLED === "1" || process.argv.includes("--cluster");
 const cpus = os.cpus().length;
 
-const run_node = () => {
+const run_production_node = () => {
     Runtime.getInstance().start();
+    Runtime.getInstance().start_config_manager();
 
     process.on('SIGINT', async () => {
         await Runtime.getInstance().stop();
@@ -36,6 +37,6 @@ if (cluster.isPrimary && clustering_enabled) {
 }
 
 if (cluster.isWorker || !clustering_enabled) {
-    run_node();
+    run_production_node();
 }
 

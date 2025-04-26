@@ -1,0 +1,1 @@
+export const value = "Hi from export.ts";

@@ -46,13 +46,15 @@ export default {
         const response = await service.fetch(request);
 
         try {
-            await env.backend.fetch(new Request("http://localhost:3000/__yukako/traffic/" + worker_id, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "text/plain"
-                },
-                body: response.status.toString()
-            }));
+            if (env.config.track_traffic) {
+                await env.backend.fetch(new Request("http://localhost:3000/__yukako/traffic/" + worker_id, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "text/plain"
+                    },
+                    body: response.status.toString()
+                }));
+            }
         } catch (error) {
             console.error(error);
         }

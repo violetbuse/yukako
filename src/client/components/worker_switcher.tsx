@@ -91,12 +91,13 @@ export const WorkerSwitcher = () => {
     const [newWorkerIsLoading, setNewWorkerIsLoading] = useState(false);
 
     const new_worker_mutation = useMutation(trpc.workers.new.mutationOptions({
-        onSuccess: () => {
+        onSuccess: (worker_id) => {
             setIsNewWorkerModalOpen(false);
             setNewWorkerName("");
             setNewWorkerError(null);
             setNewWorkerIsLoading(false);
             queryClient.invalidateQueries();
+            setSelectedWorker(worker_id);
         },
     }))
 
