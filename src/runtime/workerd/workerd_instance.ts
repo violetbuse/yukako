@@ -5,6 +5,7 @@ import { once } from 'node:events';
 import { Readable } from 'node:stream';
 import fs from 'node:fs';
 import { pipeline } from 'node:stream/promises';
+import { ConfigManager } from '@/runtime/config/manager';
 
 export const getWorkerdBinary = (): string => {
     const platform = process.platform === 'win32' ? 'windows' : process.platform;
@@ -66,6 +67,8 @@ const handle_output = (stdout: Readable, stderr: Readable) => {
 }
 
 export class WorkerdInstance {
+    private static instance: WorkerdInstance;
+
     private binary_path: string;
     private binary_ready?: Promise<void>;
     private should_cleanup_binary: boolean = false;
@@ -73,7 +76,7 @@ export class WorkerdInstance {
     private exit_promise?: Promise<void>;
     private cleanupInProgress: boolean = false;
 
-    constructor() {
+    private constructor() {
         this.binary_path = getWorkerdBinary();
 
         // if we're running in a package, we need to copy the binary to a temporary file
@@ -95,6 +98,13 @@ export class WorkerdInstance {
         // Add cleanup handlers for process termination
         process.on('SIGINT', () => this.handleSignal('SIGINT'));
         process.on('SIGTERM', () => this.handleSignal('SIGTERM'));
+    }
+
+    public static getInstance(): WorkerdInstance {
+        if (!WorkerdInstance.instance) {
+            WorkerdInstance.instance = new WorkerdInstance();
+        }
+        return WorkerdInstance.instance;
     }
 
     private async handleSignal(signal: string): Promise<void> {
@@ -121,10 +131,12 @@ export class WorkerdInstance {
         }
     }
 
-    public async update_config(config: Config): Promise<void> {
+    public async reload_config(): Promise<void> {
         if (this.binary_ready) {
             await this.binary_ready;
         }
+
+        const config = ConfigManager.getInstance().get_config();
 
         const workerd_config = await build_config(config);
         const config_binary = serialize_config(workerd_config);

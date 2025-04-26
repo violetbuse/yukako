@@ -12,6 +12,7 @@ export type Config = {
     backend_socket: string;
     workerd_port: number;
     router_config: RouterConfig;
+    poll_interval: number;
     workers: WorkerConfig[];
 }
 

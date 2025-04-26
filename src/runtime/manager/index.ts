@@ -1,17 +1,16 @@
 import { db } from "@/db";
 import hash from "object-hash";
 import { WorkerConfig } from "@/runtime/config";
+import { ConfigManager } from "@/runtime/config/manager";
 
 export class Manager {
     private static instance: Manager;
     private workers_hash: string;
-    private listeners: ((config: WorkerConfig[]) => void)[];
     private poll_interval: number;
     private running: boolean;
 
     private constructor() {
         this.workers_hash = "";
-        this.listeners = [];
         this.poll_interval = 10_000;
         this.running = true;
     }
@@ -49,24 +48,19 @@ export class Manager {
             // pretty print the new config
             // console.log(JSON.stringify(config, null, 2));
 
-            this.listeners.forEach(listener => listener(config));
+            const current_config = ConfigManager.getInstance().get_config();
+
+            ConfigManager.getInstance().update_config({
+                ...current_config,
+                workers: config
+            });
         }
     }
 
-    public add_listener(listener: (config: WorkerConfig[]) => void) {
-        this.listeners.push(listener);
-    }
-
-    public remove_listener(listener: (config: WorkerConfig[]) => void) {
-        this.listeners = this.listeners.filter(l => l !== listener);
-    }
-
-    public async start(poll_interval: number) {
-        this.poll_interval = poll_interval;
-
+    public async start() {
         while (this.running) {
             await this.poll_db_for_workers();
-            await new Promise(resolve => setTimeout(resolve, this.poll_interval));
+            await new Promise(resolve => setTimeout(resolve, ConfigManager.getInstance().get_config().poll_interval));
         }
     }
 

@@ -11,6 +11,7 @@ import cookieParser from 'cookie-parser';
 import { clerkMiddleware } from '@clerk/express';
 import { rmSync } from 'fs';
 import { yukako_backend_router } from '@/runtime/backend/router';
+import { ConfigManager } from '@/runtime/config/manager';
 
 const directory = __dirname;
 
@@ -54,32 +55,39 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     });
 });
 
-export class RuntimeBackend {
-    private config: Config;
+export class YukakoBackendServer {
+    private static instance: YukakoBackendServer;
     private server: http.Server | null;
 
-    constructor(config: Config) {
-        this.config = config;
+    private constructor() {
         this.server = null;
     }
 
-    public async start(): Promise<void> {
-        const socket = this.config.backend_socket;
-        rmSync(socket, { force: true });
-        this.server = app.listen(socket, () => {
-            console.log(`Yukako is running at ${socket}`);
-        })
+    public static getInstance(): YukakoBackendServer {
+        if (!YukakoBackendServer.instance) {
+            YukakoBackendServer.instance = new YukakoBackendServer();
+        }
+        return YukakoBackendServer.instance;
     }
 
-    public async stop(): Promise<void> {
+    public async start() {
+
+        const config = ConfigManager.getInstance().get_config();
+        rmSync(config.backend_socket, { force: true });
+
+        this.server = app.listen(config.backend_socket, () => {
+            console.log(`Yukako is running at ${config.backend_socket}`);
+        });
+    }
+
+    public async stop() {
         if (this.server) {
             this.server.close();
         }
     }
 
-    public async update_config(config: Config): Promise<void> {
-        this.config = config;
-        this.stop();
-        this.start();
+    public async restart() {
+        await this.stop();
+        await this.start();
     }
 }
