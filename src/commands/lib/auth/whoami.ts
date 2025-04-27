@@ -1,5 +1,5 @@
 import { get_auth_token } from "@/commands/lib/config";
-import { cli_yukako_url } from "@/commands/invariants";
+import { cli_yukako_url } from "@/commands/lib/invariants";
 import { z } from "zod";
 
 const schema = z.object({

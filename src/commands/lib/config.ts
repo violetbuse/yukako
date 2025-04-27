@@ -27,7 +27,7 @@ export const get_auth_token = () => {
     if (!token) {
         return null;
     }
-    return token;
+    return token as string;
 }
 
 export const set_auth_token = (token: string) => {

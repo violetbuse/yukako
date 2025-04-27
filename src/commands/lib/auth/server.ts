@@ -1,6 +1,6 @@
 import express from 'express';
 import portfinder from 'portfinder';
-import { cli_yukako_url } from '@/commands/invariants';
+import { cli_yukako_url } from '@/commands/lib/invariants';
 
 const SUCCESS_PAGE = `
 <html>
