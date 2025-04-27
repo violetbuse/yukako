@@ -13,6 +13,31 @@ export const t = initTRPC.context<Context>().create();
 export const router = t.router;
 export const public_procedure = t.procedure;
 
+export const user_procedure = t.procedure.use(async ({ ctx, next }) => {
+    if (!ctx.user_id) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    const user_id = ctx.user_id;
+
+    return next({ ctx: { user_id } });
+});
+
+export const worker_procedure = t.procedure.use(async ({ ctx, next }) => {
+
+    if (!ctx.user_id) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    if (!ctx.worker_id) {
+        throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    const user_id = ctx.user_id;
+    const worker_id = ctx.worker_id;
+
+    return next({ ctx: { user_id, worker_id } });
+});
 
 export const createTRPCServerContext = async ({ req, res }: trpcExpress.CreateExpressContextOptions): Promise<Context> => {
 

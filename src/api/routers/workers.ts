@@ -1,4 +1,4 @@
-import { public_procedure } from "@/api/server"
+import { user_procedure, worker_procedure } from "@/api/server"
 import Dns2 from "dns2"
 import { router } from "@/api/server"
 import { db } from "@/db"
@@ -19,10 +19,7 @@ export default {
 
 export const workers_router = router({
     hostnames: hostnames_router,
-    list: public_procedure.query(async ({ ctx }) => {
-        if (!ctx.user_id) {
-            throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to view this page" })
-        }
+    list: user_procedure.query(async ({ ctx }) => {
 
         const owner_id = ctx.organization_id ? ctx.organization_id : ctx.user_id
 
@@ -35,12 +32,9 @@ export const workers_router = router({
             name: worker.name
         }))
     }),
-    new: public_procedure.input(z.object({
+    new: user_procedure.input(z.object({
         name: z.string(),
     })).mutation(async ({ ctx, input }) => {
-        if (!ctx.user_id) {
-            throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to view this page" })
-        }
 
         const owner_id = ctx.organization_id ? ctx.organization_id : ctx.user_id
 
@@ -57,7 +51,7 @@ export const workers_router = router({
 
         return worker_id
     }),
-    get_source: public_procedure.query(async ({ ctx }) => {
+    get_source: worker_procedure.query(async ({ ctx }) => {
         if (!ctx.user_id) {
             throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to view this page" })
         }

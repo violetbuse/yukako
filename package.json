@@ -22,7 +22,7 @@
         "dev": "concurrently --names \"server,client,webhook\" --prefix-colors \"blue,green,red\" \"npm run dev:server\" \"npm run dev:client\" \"npm run dev:webhook\"",
         "start": "node dist/index.cjs",
         "generate": "./generate_workerd.sh",
-        "package": "npm run build:production && rm -rf dist/pkg && pkg . && chmod +x dist/pkg/*"
+        "package": "rm -rf dist/pkg && pkg . && chmod +x dist/pkg/*"
     },
     "dependencies": {
         "@clerk/clerk-react": "^5.30.0",
