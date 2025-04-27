@@ -2,6 +2,21 @@ const esbuild = require('esbuild');
 const fs = require('fs');
 const path = require('path');
 const cpr = require('cpr');
+const config = require('dotenv').config;
+
+const production_build = process.argv.includes('--production') || process.env.NODE_ENV === 'production';
+
+config({
+  path: production_build ? '.env.production' : '.env',
+});
+
+const define = {};
+
+for (const k in process.env) {
+  if (k.startsWith('YUKAKO_')) {
+    define[`process.env.${k}`] = JSON.stringify(process.env[k]);
+  }
+}
 
 const logging_options = {
   logLevel: 'info',
@@ -35,6 +50,7 @@ const cliConfig = {
   banner: {
     // js: 'import * as build_banner_url from "url";\nimport * as build_banner_path from "path";\nconst __filename = build_banner_url.fileURLToPath(import.meta.url);\nconst __dirname = build_banner_path.dirname(__filename);'
   },
+  define,
   external: [
     'esbuild'
   ],

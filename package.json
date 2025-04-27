@@ -8,9 +8,11 @@
         "yukako": "dist/cli.cjs"
     },
     "scripts": {
-        "build:server": "node build.cjs",
+        "build:server:dev": "node build.cjs",
+        "build:server:production": "node build.cjs --production",
         "build:client": "vite build",
-        "build": "npm run build:server && npm run build:client",
+        "build": "npm run build:server:dev && npm run build:client",
+        "build:production": "npm run build:server:production && npm run build:client",
         "watch:server": "node build.cjs --watch",
         "watch:client": "vite build --watch",
         "watch": "npm run watch:server & npm run watch:client",
@@ -20,7 +22,7 @@
         "dev": "concurrently --names \"server,client,webhook\" --prefix-colors \"blue,green,red\" \"npm run dev:server\" \"npm run dev:client\" \"npm run dev:webhook\"",
         "start": "node dist/index.cjs",
         "generate": "./generate_workerd.sh",
-        "package": "rm -rf dist/pkg && pkg . && chmod +x dist/pkg/*"
+        "package": "npm run build:production && rm -rf dist/pkg && pkg . && chmod +x dist/pkg/*"
     },
     "dependencies": {
         "@clerk/clerk-react": "^5.30.0",
