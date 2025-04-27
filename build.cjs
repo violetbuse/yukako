@@ -35,6 +35,9 @@ const mainConfig = {
   banner: {
     // js: 'import * as build_banner_url from "url";\nimport * as build_banner_path from "path";\nconst __filename = build_banner_url.fileURLToPath(import.meta.url);\nconst __dirname = build_banner_path.dirname(__filename);'
   },
+  external: [
+    'esbuild'
+  ],
   ...logging_options
 };
 

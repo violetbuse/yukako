@@ -45,9 +45,6 @@ export const build_config = async (input: Config): Promise<WorkerdConfig> => {
             name: worker.id,
             worker: {
                 modules: [{
-                    name: "entrypoint.js",
-                    esModule: builtins.entrypoint
-                }, {
                     name: "script",
                     esModule: worker.main_script
                 }, ...aux_modules],

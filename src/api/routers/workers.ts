@@ -93,4 +93,25 @@ export const workers_router = router({
 
         return [entrypoint, ...modules]
     }),
+    upload_source: worker_procedure.input(z.object({
+        script: z.string(),
+        modules: z.array(z.object({
+            id: z.string(),
+            name: z.string(),
+            content: z.string(),
+            type: z.literal('esm')
+        }))
+    })).mutation(async ({ ctx, input }) => {
+        return await db.transaction(async (tx) => {
+            const worker = await tx.query.workers.findFirst({
+                where: eq(workers.id, ctx.worker_id)
+            })
+
+            if (!worker) {
+                throw new TRPCError({ code: "NOT_FOUND", message: "Worker not found" })
+            }
+
+
+        });
+    })
 })
