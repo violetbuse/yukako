@@ -61,6 +61,8 @@ const create_onload_plugin = (files: Record<string, File>, working_directory: st
         name: 'custom-notify-plugin',
         setup(build) {
             build.onLoad({ filter: /.*/ }, async (args) => {
+                console.log('setting up onload plugin')
+                console.log(args.path)
                 const filename = args.path;
                 const file_path = filename.replace(working_directory, '');
                 const file = files[file_path];

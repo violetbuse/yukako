@@ -1,5 +1,5 @@
 // @ts-ignore
-import entrypoint from "script";
+import entrypoint from "./script";
 
 type Environment = {} & Record<string, any>;
 

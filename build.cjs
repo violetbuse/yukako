@@ -68,7 +68,7 @@ const workerConfig = {
   bundle: true,
   external: [
     // All the external dependencies that are not needed for the worker
-    'script'
+    './script'
   ],
   ...logging_options
 };
