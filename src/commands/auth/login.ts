@@ -1,6 +1,6 @@
 import { Command } from 'commander';
-import { create_localhost_server } from './lib/auth/server';
-import { set_auth_token } from './lib/config';
+import { create_localhost_server } from '../lib/auth/server';
+import { set_auth_token } from '../lib/config';
 import { cli_yukako_url } from '@/commands/lib/invariants';
 import { whoami } from '@/commands/lib/auth/whoami';
 // import open from 'open';

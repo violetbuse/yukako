@@ -18,6 +18,10 @@ export default {
             return new Response("OK");
         }
 
+        if (typeof env.config.route_all === "string" && env[env.config.route_all]) {
+            return env[env.config.route_all].fetch(request);
+        }
+
         const hostname = url.hostname;
 
         if (!hostname) {

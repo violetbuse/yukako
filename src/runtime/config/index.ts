@@ -29,6 +29,7 @@ export type RouterConfig = {
     serve_admin: boolean;
     admin_hostnames: string[];
     track_traffic: boolean;
+    route_all?: string | null;
 }
 
 export const build_config = async (input: Config): Promise<WorkerdConfig> => {

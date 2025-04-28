@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { clear_auth_token } from './lib/config';
+import { clear_auth_token } from '../lib/config';
 
 const logoutCommand = new Command('logout')
     .description('Logout from Yukako')

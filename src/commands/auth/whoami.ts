@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { whoami } from './lib/auth/whoami';
+import { whoami } from '../lib/auth/whoami';
 
 const whoamiCommand = new Command('whoami')
     .description('Display the current authenticated user information')

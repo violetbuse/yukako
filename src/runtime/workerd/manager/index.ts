@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import hash from "object-hash";
+import sum from 'hash-sum';
 import { WorkerConfig } from "@/runtime/config";
 import { ConfigManager } from "@/runtime/config/manager";
 
@@ -25,7 +25,7 @@ export class WorkerdConfigManager {
 
     private async handle_worker_update(workers: WorkerConfig[]) {
 
-        const worker_hash = hash(workers, { algorithm: "md5" });
+        const worker_hash = sum(workers);
 
         if (worker_hash !== this.workers_hash) {
             this.workers_hash = worker_hash;
