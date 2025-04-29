@@ -69,37 +69,6 @@ app.get("/api/cli/me", async (req, res) => {
     })
 })
 
-app.post('/api/cli/deploy/:worker_id', async (req, res) => {
-    // const { orgId, userId } = getAuth(req);
-
-    // if (!userId) {
-    //     res.status(401).json({ error: "Unauthorized" });
-    //     return;
-    // }
-
-    // const owner_id = orgId ?? userId;
-    // const worker_id = req.params.worker_id;
-
-    // const worker = await db.query.workers.findFirst({
-    //     where: and(
-    //         eq(workers.owner_id, owner_id),
-    //         eq(workers.id, worker_id)
-    //     )
-    // })
-
-    // if (!worker) {
-    //     res.status(404).json({ error: "Worker not found" });
-    //     return;
-    // }
-
-    const data = req.body;
-    const worker_package = worker_package_schema.parse(data);
-
-    const built_worker = await build_from_package(worker_package);
-
-    res.json(built_worker);
-})
-
 app.use('/__yukako', yukako_backend_router);
 app.use(express.static(client_files, {
     dotfiles: 'ignore',

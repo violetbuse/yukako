@@ -6,6 +6,7 @@ import whoamiCommand from '@/commands/auth/whoami';
 import logoutCommand from '@/commands/auth/logout';
 import buildCommand from '@/commands/source/build';
 import serveCommand from '@/commands/source/serve';
+import uploadCommand from '@/commands/source/upload';
 
 const program = new Command();
 
@@ -19,6 +20,7 @@ program.addCommand(whoamiCommand);
 program.addCommand(logoutCommand);
 program.addCommand(buildCommand);
 program.addCommand(serveCommand);
+program.addCommand(uploadCommand);
 
 program.parse(process.argv);
 

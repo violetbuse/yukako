@@ -2,12 +2,13 @@ import { user_procedure, worker_procedure } from "@/api/server"
 import Dns2 from "dns2"
 import { router } from "@/api/server"
 import { db } from "@/db"
-import { workers, hostnames } from "@/db/schema"
+import { workers, hostnames, modules } from "@/db/schema"
 import { TRPCError } from "@trpc/server"
-import { eq, not, and } from "drizzle-orm"
+import { eq, not, and, notInArray } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { z } from "zod"
 import { hostnames_router } from "@/api/routers/hostnames"
+import { worker_package_schema, verify_worker_package, build_from_package, WorkerPackageFileType } from "@/builder"
 
 const default_worker_script = `
 export default {
@@ -93,25 +94,44 @@ export const workers_router = router({
 
         return [entrypoint, ...modules]
     }),
-    upload_source: worker_procedure.input(z.object({
-        script: z.string(),
-        modules: z.array(z.object({
-            id: z.string(),
-            name: z.string(),
-            content: z.string(),
-            type: z.literal('esm')
-        }))
+    upload_source_package: worker_procedure.input(z.object({
+        worker_id: z.string(),
+        package: worker_package_schema
     })).mutation(async ({ ctx, input }) => {
         return await db.transaction(async (tx) => {
+
+            const worker_id = input.worker_id;
+
             const worker = await tx.query.workers.findFirst({
-                where: eq(workers.id, ctx.worker_id)
+                where: eq(workers.id, worker_id)
             })
 
             if (!worker) {
                 throw new TRPCError({ code: "NOT_FOUND", message: "Worker not found" })
             }
 
+            const valid_package = verify_worker_package(input.package)
+            const built_package = await build_from_package(input.package)
 
+            const existing_modules = await tx.query.modules.findMany({
+                where: eq(modules.worker_id, ctx.worker_id)
+            })
+
+            await tx.insert(modules).values(built_package.files.map((file) => ({
+                worker_id: ctx.worker_id,
+                name: file.filename,
+                type: file.type as WorkerPackageFileType,
+                value: file.content
+            })));
+
+            await tx.update(workers).set({
+                entrypoint: built_package.entrypoint,
+                compatibility_date: built_package.compatibility_date
+            }).where(eq(workers.id, ctx.worker_id))
+
+            await tx.delete(modules).where(notInArray(modules.id, existing_modules.map((module) => module.id)))
+
+            return true
         });
     })
 })

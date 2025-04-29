@@ -8,16 +8,20 @@ import esbuild from "esbuild";
 import hash_sum from "hash-sum";
 import { WorkerConfig } from "@/runtime/config";
 
+const file_type_schema = z.enum(['esm'])
+
 export const worker_package_schema = z.object({
     package_checksum: z.string(),
     compatibility_date: z.string(),
     files: z.array(z.tuple([z.string(), z.object({
         content: z.string(),
-        type: z.literal('esm')
+        type: file_type_schema
     })])),
 })
 
 export type WorkerPackage = z.infer<typeof worker_package_schema>;
+
+export type WorkerPackageFileType = z.infer<typeof file_type_schema>;
 
 export const create_worker_package = async (script_path: string, compatibility_date: string): Promise<WorkerPackage> => {
 
