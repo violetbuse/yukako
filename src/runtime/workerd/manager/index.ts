@@ -2,6 +2,8 @@ import { db } from "@/db";
 import sum from 'hash-sum';
 import { WorkerConfig } from "@/runtime/config";
 import { ConfigManager } from "@/runtime/config/manager";
+import { deployments, hostnames, modules } from "@/db/schema";
+import { aliasedTable, and, desc, eq, max, sql } from "drizzle-orm";
 
 export class WorkerdConfigManager {
     private static instance: WorkerdConfigManager;
@@ -47,31 +49,72 @@ export class WorkerdConfigManager {
     }
 
     private async poll_db_for_workers() {
-        const worker_list = await db.query.workers.findMany({
-            with: {
-                modules: true,
-                hostnames: {
-                    where: (hostnames, { eq }) => eq(hostnames.verified, true)
+
+        const max_versions = db.select({ max: max(deployments.version), worker_id: deployments.worker_id }).from(deployments).groupBy(deployments.worker_id).as('max_versions');
+
+        const raw_data = await db
+            .select()
+            .from(max_versions)
+            .innerJoin(deployments,
+                and(
+                    eq(max_versions.worker_id, deployments.worker_id),
+                    eq(max_versions.max, deployments.version)))
+            .leftJoin(modules, eq(deployments.id, modules.deployment_id))
+            .leftJoin(hostnames,
+                and(
+                    eq(deployments.worker_id, hostnames.worker_id),
+                    eq(hostnames.verified, true)))
+            .iterator();
+
+        const config: WorkerConfig[] = [];
+
+        for await (const row of raw_data) {
+            const worker_id = row.deployments.worker_id;
+            const main_script: string | undefined = row.modules?.entrypoint ? row.modules.value : undefined;
+            const compatibility_date = row.deployments.compatibility_date;
+            const hostname = row.hostnames?.hostname;
+            const module_name = main_script === undefined ? row.modules?.name : undefined;
+            const module_type = main_script === undefined ? row.modules?.type : undefined;
+            const module_value = main_script === undefined ? row.modules?.value : undefined;
+
+            const config_idx = config.findIndex(c => c.id === worker_id);
+
+            if (config_idx === -1) {
+                config.push({
+                    id: worker_id,
+                    main_script: main_script ?? "",
+                    compatibility_date,
+                    hostnames: hostname ? [hostname] : [],
+                    modules: module_name && module_type && module_value ? [{
+                        name: module_name,
+                        type: module_type,
+                        value: module_value
+                    }] : [],
+                });
+            } else {
+                config[config_idx].compatibility_date = compatibility_date;
+
+                if (main_script) {
+                    config[config_idx].main_script = main_script;
+                }
+
+                if (hostname) {
+                    config[config_idx].hostnames.push(hostname);
+                }
+
+                if (module_name && module_type && module_value) {
+                    const existing_module = config[config_idx].modules.find(m => m.name === module_name);
+                    if (existing_module) {
+                        existing_module.type = module_type;
+                        existing_module.value = module_value;
+                    } else {
+                        config[config_idx].modules.push({ name: module_name, type: module_type, value: module_value });
+                    }
                 }
             }
-        });
-
-        const config: WorkerConfig[] = worker_list.map(worker => ({
-            id: worker.id,
-            main_script: worker.entrypoint,
-            compatibility_date: worker.compatibility_date,
-            hostnames: worker.hostnames.map(hostname => hostname.hostname),
-            modules: worker.modules.map(module => {
-                return {
-                    name: module.name,
-                    type: module.type,
-                    value: module.value
-                }
-            })
-        }));
+        }
 
         await this.handle_worker_update(config);
-
     }
 
     public async update_workers(workers: WorkerConfig[]) {
