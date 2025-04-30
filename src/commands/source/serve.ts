@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { verify_worker_package, config_from_package } from '@/builder';
+import { verify_worker_package, config_from_package } from '@/lib/builder';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import fs from 'node:fs';

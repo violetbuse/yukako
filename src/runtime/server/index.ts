@@ -17,7 +17,7 @@ import { CLERK_SECRET_KEY, clerk_client, CLERK_PUBLIC_KEY } from '@/auth/clerk';
 import { db } from '@/db';
 import { workers } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { worker_package_schema, build_from_package } from '@/builder';
+import { worker_package_schema, build_from_package } from '@/lib/builder';
 
 const directory = __dirname;
 

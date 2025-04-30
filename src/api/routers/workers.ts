@@ -8,7 +8,7 @@ import { eq, not, and, notInArray } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { z } from "zod"
 import { hostnames_router } from "@/api/routers/hostnames"
-import { worker_package_schema, verify_worker_package, build_from_package, WorkerPackageFileType } from "@/builder"
+import { worker_package_schema, verify_worker_package, build_from_package, WorkerPackageFileType } from "@/lib/builder"
 
 const default_worker_script = `
 export default {

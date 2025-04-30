@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { db } from '@/db';
 import { workers, modules } from '@/db/schema';
-import { build_from_package, verify_worker_package, worker_package_schema } from '@/builder';
+import { build_from_package, verify_worker_package, worker_package_schema } from '@/lib/builder';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import path from 'node:path';

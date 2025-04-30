@@ -1,6 +1,6 @@
 
 import { Command } from 'commander';
-import { create_worker_package } from '@/builder';
+import { create_worker_package } from '@/lib/builder';
 import { build_config, serialize_config } from '@/runtime/config';
 import { writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
