@@ -8,8 +8,6 @@ export const workers = mysqlTable("workers", {
     name: text("name").notNull(),
     created_at: timestamp("created_at").notNull().defaultNow(),
     updated_at: timestamp("updated_at").notNull().defaultNow(),
-    entrypoint: text("entrypoint").notNull(),
-    compatibility_date: text("compatibility_date").notNull(),
 })
 
 export const workers_relations = relations(workers, ({ many }) => ({
@@ -24,6 +22,7 @@ export const deployments = mysqlTable("deployments", {
     created_at: timestamp("created_at").notNull().defaultNow(),
     updated_at: timestamp("updated_at").notNull().defaultNow(),
     compatibility_date: text("compatibility_date").notNull(),
+    error: text("error")
 }, table => [
     unique().on(table.worker_id, table.version)
 ])

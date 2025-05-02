@@ -8,6 +8,7 @@ export type Config = {
     workerd_socket: string;
     router_config: RouterConfig;
     poll_interval: number;
+    worker_update_debounce_interval: number;
     workers: WorkerConfig[];
 }
 

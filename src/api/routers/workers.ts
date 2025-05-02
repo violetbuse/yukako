@@ -2,9 +2,9 @@ import { user_procedure, worker_procedure } from "@/api/server"
 import Dns2 from "dns2"
 import { router } from "@/api/server"
 import { db } from "@/db"
-import { workers, hostnames, modules } from "@/db/schema"
+import { workers, hostnames, modules, deployments } from "@/db/schema"
 import { TRPCError } from "@trpc/server"
-import { eq, not, and, notInArray } from "drizzle-orm"
+import { eq, not, and, notInArray, desc } from "drizzle-orm"
 import { nanoid } from "nanoid"
 import { z } from "zod"
 import { hostnames_router } from "@/api/routers/hostnames"
@@ -46,53 +46,9 @@ export const workers_router = router({
             id: worker_id,
             owner_id,
             name: input.name,
-            entrypoint: default_worker_script,
-            compatibility_date: "2024-01-01"
         })
 
         return worker_id
-    }),
-    get_source: worker_procedure.query(async ({ ctx }) => {
-        if (!ctx.user_id) {
-            throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to view this page" })
-        }
-
-        if (!ctx.worker_id) {
-            throw new TRPCError({ code: "BAD_REQUEST", message: "Worker ID is required" })
-        }
-
-        const worker = await db.query.workers.findFirst({
-            where: eq(workers.id, ctx.worker_id),
-            with: {
-                modules: true
-            }
-        })
-
-        if (!worker) {
-            throw new TRPCError({ code: "NOT_FOUND", message: "Worker not found" })
-        }
-
-        const entrypoint = {
-            id: '__entrypoint__',
-            name: 'worker.js (entrypoint)',
-            content: worker.entrypoint,
-            type: 'javascript'
-        }
-
-        const modules = worker.modules
-            .map((module) => {
-                let content = module.value;
-                let type = module.type;
-
-                return {
-                    id: module.id,
-                    name: module.name,
-                    content,
-                    type
-                }
-            })
-
-        return [entrypoint, ...modules]
     }),
     upload_source_package: worker_procedure.input(z.object({
         worker_id: z.string(),
@@ -101,9 +57,10 @@ export const workers_router = router({
         return await db.transaction(async (tx) => {
 
             const worker_id = input.worker_id;
+            const owner_id = ctx.organization_id ? ctx.organization_id : ctx.user_id
 
             const worker = await tx.query.workers.findFirst({
-                where: eq(workers.id, worker_id)
+                where: and(eq(workers.id, worker_id), eq(workers.owner_id, owner_id))
             })
 
             if (!worker) {
@@ -111,27 +68,70 @@ export const workers_router = router({
             }
 
             const valid_package = verify_worker_package(input.package)
-            const built_package = await build_from_package(input.package)
 
-            const existing_modules = await tx.query.modules.findMany({
-                where: eq(modules.worker_id, ctx.worker_id)
+            if (!valid_package) {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid worker package" })
+            }
+
+            const previous_deployment = await tx.query.deployments.findFirst({
+                where: eq(deployments.worker_id, worker_id),
+                orderBy: desc(deployments.version)
             })
 
+            const next_version = previous_deployment ? previous_deployment.version + 1 : 1
+
+            let built_package: Awaited<ReturnType<typeof build_from_package>> | null = null
+
+            try {
+                built_package = await build_from_package(input.package)
+
+            } catch (error) {
+                if (error instanceof Error) {
+                    const new_deployment = await tx.insert(deployments).values({
+                        worker_id,
+                        version: next_version,
+                        compatibility_date: input.package.compatibility_date,
+                        error: error.message
+                    }).$returningId();
+
+                    if (new_deployment.length === 0) {
+                        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create deployment" })
+                    }
+
+                    return new_deployment[0].id
+                }
+
+                throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to build worker package" })
+            }
+
+            const new_deployment = await tx.insert(deployments).values({
+                worker_id,
+                version: next_version,
+                compatibility_date: input.package.compatibility_date,
+                error: null
+            }).$returningId();
+
+            if (new_deployment.length === 0) {
+                throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to create deployment" })
+            }
+
+            const deployment_id = new_deployment[0].id
+
             await tx.insert(modules).values(built_package.files.map((file) => ({
-                worker_id: ctx.worker_id,
+                deployment_id,
                 name: file.filename,
                 type: file.type as WorkerPackageFileType,
                 value: file.content
             })));
 
-            await tx.update(workers).set({
-                entrypoint: built_package.entrypoint,
-                compatibility_date: built_package.compatibility_date
-            }).where(eq(workers.id, ctx.worker_id))
+            await tx.insert(modules).values({
+                deployment_id,
+                name: "workerscript",
+                type: "esm",
+                value: built_package.entrypoint
+            })
 
-            await tx.delete(modules).where(notInArray(modules.id, existing_modules.map((module) => module.id)))
-
-            return true
+            return deployment_id
         });
     })
 })

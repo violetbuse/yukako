@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { Runtime } from './runtime';
 import cluster from 'cluster';
 import os from 'os';
+import { ConfigManager } from './runtime/config/manager';
 
 // Runtime.getInstance().start();
 
@@ -14,6 +15,15 @@ const clustering_enabled = process.env.CLUSTERING_ENABLED === "true" || process.
 const cpus = os.cpus().length;
 
 const run_production_node = () => {
+    const config_manager = ConfigManager.getInstance();
+
+
+    config_manager.update_config({
+        ...config_manager.get_config(),
+        // Production nodes update worker configs at most every minute
+        worker_update_debounce_interval: 60_000
+    });
+
     Runtime.getInstance().start();
     Runtime.getInstance().start_config_manager();
 

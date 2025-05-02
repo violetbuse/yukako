@@ -23,6 +23,7 @@ export class ConfigManager {
                 backend_socket,
                 workerd_socket,
                 poll_interval,
+                worker_update_debounce_interval: 10_000,
                 router_config: {
                     serve_admin: true,
                     admin_hostnames: ["localhost", "yukako.com"],

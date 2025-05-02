@@ -3,17 +3,15 @@ import sum from 'hash-sum';
 import { WorkerConfig } from "@/runtime/config";
 import { ConfigManager } from "@/runtime/config/manager";
 import { deployments, hostnames, modules } from "@/db/schema";
-import { aliasedTable, and, desc, eq, max, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, max } from "drizzle-orm";
 
 export class WorkerdConfigManager {
     private static instance: WorkerdConfigManager;
     private workers_hash: string;
-    private poll_interval: number;
     private running: boolean;
 
     private constructor() {
         this.workers_hash = "";
-        this.poll_interval = 10_000;
         this.running = true;
     }
 
@@ -29,28 +27,33 @@ export class WorkerdConfigManager {
 
         const worker_hash = sum(workers);
 
-        if (worker_hash !== this.workers_hash) {
-            this.workers_hash = worker_hash;
-
-
-            // console.log(`[manager] updating config with ${workers.length} workers`);
-            // console.log(JSON.stringify(workers, null, 2));
-
-            // pretty print the new config
-            // console.log(JSON.stringify(config, null, 2));
-
-            const current_config = ConfigManager.getInstance().get_config();
-
-            ConfigManager.getInstance().update_config({
-                ...current_config,
-                workers: workers
-            });
+        if (worker_hash === this.workers_hash) {
+            return;
         }
+
+        this.workers_hash = worker_hash;
+
+        // console.log(`[manager] updating config with ${workers.length} workers`);
+        // console.log(JSON.stringify(workers, null, 2));
+
+        // pretty print the new config
+        // console.log(JSON.stringify(config, null, 2));
+
+        const current_config = ConfigManager.getInstance().get_config();
+
+        ConfigManager.getInstance().update_config({
+            ...current_config,
+            workers: workers
+        });
     }
 
     private async poll_db_for_workers() {
 
-        const max_versions = db.select({ max: max(deployments.version), worker_id: deployments.worker_id }).from(deployments).groupBy(deployments.worker_id).as('max_versions');
+        const max_versions = db.select({ max: max(deployments.version), worker_id: deployments.worker_id })
+            .from(deployments)
+            .where(isNotNull(deployments.error))
+            .groupBy(deployments.worker_id)
+            .as('max_versions');
 
         const raw_data = await db
             .select()
@@ -64,6 +67,7 @@ export class WorkerdConfigManager {
                 and(
                     eq(deployments.worker_id, hostnames.worker_id),
                     eq(hostnames.verified, true)))
+            .orderBy(desc(deployments.id))
             .iterator();
 
         const config: WorkerConfig[] = [];
@@ -133,6 +137,16 @@ export class WorkerdConfigManager {
     }
 
     public async set_poll_interval(poll_interval: number) {
-        this.poll_interval = poll_interval;
+        ConfigManager.getInstance().update_config({
+            ...ConfigManager.getInstance().get_config(),
+            poll_interval
+        });
+    }
+
+    public async set_worker_update_debounce_interval(worker_update_debounce_interval: number) {
+        ConfigManager.getInstance().update_config({
+            ...ConfigManager.getInstance().get_config(),
+            worker_update_debounce_interval
+        });
     }
 }

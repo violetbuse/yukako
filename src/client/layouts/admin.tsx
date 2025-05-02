@@ -83,49 +83,12 @@ const AdminSidebar = () => {
 
 const SidebarDeveloper = () => {
 
-    const [code_collapsed, setCodeCollapsed] = useState(() => {
-        const savedState = localStorage.getItem('code_collapsed');
-        return savedState ? JSON.parse(savedState) : false;
-    });
-
-    useEffect(() => {
-        localStorage.setItem('code_collapsed', JSON.stringify(code_collapsed));
-    }, [code_collapsed]);
-
-    const trpc = useTRPC()
-    const files = useQuery(trpc.workers.get_source.queryOptions());
-
-    const [match_code, code_params] = useRoute("/admin/code/:script_id");
     const [match_hostnames] = useRoute("/admin/hostnames");
 
     return (
         <SidebarGroup>
             <SidebarGroupLabel>Developers</SidebarGroupLabel>
             <SidebarMenu>
-                <Collapsible asChild open={!code_collapsed} onOpenChange={() => setCodeCollapsed(!code_collapsed)} className="group/collapsible">
-                    <SidebarMenuItem>
-                        <CollapsibleTrigger asChild>
-                            <SidebarMenuButton isActive={match_code && code_collapsed} tooltip="Worker Source Code">
-                                <Code />
-                                <span className="ml-2 truncate">Source Code</span>
-                                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                            </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                            <SidebarMenuSub>
-                                {files.status === "success" && files.data?.map((file) => (
-                                    <SidebarMenuSubItem key={file.id}>
-                                        <SidebarMenuSubButton isActive={match_code && code_params?.script_id === file.id} asChild>
-                                            <Link href={`/admin/code/${file.id}`}>
-                                                <span className="truncate">{file.name}</span>
-                                            </Link>
-                                        </SidebarMenuSubButton>
-                                    </SidebarMenuSubItem>
-                                ))}
-                            </SidebarMenuSub>
-                        </CollapsibleContent>
-                    </SidebarMenuItem>
-                </Collapsible>
                 <SidebarMenuItem>
                     <SidebarMenuButton asChild tooltip="Domains & Hostnames" isActive={match_hostnames}>
                         <Link href="/admin/hostnames">
