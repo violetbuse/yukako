@@ -1,9 +1,10 @@
 import { db } from "@/db";
 import sum from 'hash-sum';
-import { WorkerConfig } from "@/runtime/config";
+import { Config, WorkerConfig } from "@/runtime/config";
 import { ConfigManager } from "@/runtime/config/manager";
 import { deployments, hostnames, modules } from "@/db/schema";
 import { and, desc, eq, isNotNull, max } from "drizzle-orm";
+import _ from "lodash";
 
 export class WorkerdConfigManager {
     private static instance: WorkerdConfigManager;
@@ -41,10 +42,12 @@ export class WorkerdConfigManager {
 
         const current_config = ConfigManager.getInstance().get_config();
 
-        ConfigManager.getInstance().update_config({
+        const new_config: Config = {
             ...current_config,
             workers: workers
-        });
+        }
+
+        ConfigManager.getInstance().update_config(new_config);
     }
 
     private async poll_db_for_workers() {
@@ -143,10 +146,10 @@ export class WorkerdConfigManager {
         });
     }
 
-    public async set_worker_update_debounce_interval(worker_update_debounce_interval: number) {
+    public async set_worker_update_throttle_interval(worker_update_throttle_interval: number) {
         ConfigManager.getInstance().update_config({
             ...ConfigManager.getInstance().get_config(),
-            worker_update_debounce_interval
+            worker_update_throttle_interval
         });
     }
 }

@@ -1,6 +1,6 @@
 import { RouterConfig, WorkerConfig } from "@/runtime/config";
 import { ConfigManager } from "@/runtime/config/manager";
-import { WorkerdConfigManager } from "@/runtime/workerd/manager";
+import { WorkerdConfigManager } from "@/runtime/workerd/workerd_config_manager";
 import { YukakoBackendServer } from "@/runtime/server";
 import { WorkerdInstance } from "@/runtime/workerd";
 import { Proxy } from "@/runtime/proxy";
